@@ -4,6 +4,8 @@
 #include <fstream>
 
 int main(int argc, char* argv[]) {
+    std::cout << "Hello, World!" << std::endl;
+
     using namespace ftxui;
 
     Element document =
