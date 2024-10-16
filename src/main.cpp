@@ -1,6 +1,7 @@
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <iostream>
+#include <fstream>
 
 int main(int argc, char* argv[]) {
     using namespace ftxui;
