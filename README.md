@@ -1,2 +1,2 @@
-# Metoxid
-Metoxid - mediafile metadata editor, written in C++
+# Mr.MetaClean
+Mr.MetaClean - mediafile metadata editor, written in C++
