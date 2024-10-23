@@ -1,22 +1,19 @@
 cmake_minimum_required(VERSION 3.11)
 
-include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
-FetchContent_Declare(ftxui
-    GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-    GIT_TAG main # Important: Specify a version or a commit hash here.
-)
-FetchContent_MakeAvailable(ftxui)
-
 project(metoxid)
+
+find_package(Curses REQUIRED)
 
 set(SOURCES
     src/main.cpp)
 
 add_executable(metoxid ${SOURCES})
+
+if (CURSES_FOUND)
+    target_include_directories(metoxid PRIVATE ${CURSES_INCLUDE_DIR})
+    target_link_libraries(metoxid PRIVATE ${CURSES_LIBRARIES})
+else()
+    message(FATAL_ERROR "Could not find the ncurses library")
+endif()
+
 target_include_directories(metoxid PRIVATE include)
-target_link_libraries(metoxid
-    PRIVATE ftxui::screen
-    PRIVATE ftxui::dom
-    PRIVATE ftxui::component
-)
