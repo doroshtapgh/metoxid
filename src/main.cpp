@@ -40,3 +40,6 @@ int main(int argc, char* const argv[]) {
 //g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
 
 //g++ -o main -std=c++14 src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
+
+// Ensure the correct linkage to Exiv2 library
+// g++ -o main -std=c++14 src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses -lstdc++fs
