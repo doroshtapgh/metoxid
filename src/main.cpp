@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
 	signal(SIGINT, sigint_handler);
 
     initscr();
+	
 	keypad(stdscr, TRUE);
 
 	if (has_colors()) {
