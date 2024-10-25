@@ -8,8 +8,10 @@
 #error "Unsupported target platform."
 #endif
 
-#if defined(linux) || defined(__linux) || defined(__linux__)
+#if defined(LINUX_PLATFORM) || defined(MACOS_PLATFORM)
 #include <ncurses.h>
+#include <exiv2/exiv2.hpp>
+
 #else
 #include <ncurses/ncurses.h>
 #endif
@@ -17,6 +19,7 @@
 #include <signal.h>
 #include <filesystem>
 #include <vector>
+#include <iostream>
 
 std::vector<std::filesystem::path> list_directory(const std::filesystem::path& dir);
 void browse_directory(const std::filesystem::path& dir);
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]) {
 		if (std::filesystem::exists(path)) {
 			if (std::filesystem::is_regular_file(path)) {
 				edit_file(path);
+                fatal_error("%s Will Edit Now", argv[1]);
 			} else if (std::filesystem::is_directory(path)) {
 				browse_directory(path);
 			} else {
@@ -102,7 +106,7 @@ void browse_directory(const std::filesystem::path& dir) {
 			}
 		}
 
-		// printw("selected_index: %ld, num_of_elems: %ld\n", selected_index, num_of_elems);
+		//printw("selected_index: %ld, num_of_elems: %ld\n", selected_index, num_of_elems);
 
 		refresh();
 
@@ -116,11 +120,20 @@ void browse_directory(const std::filesystem::path& dir) {
 			if (selected_index + 1 < num_of_elems) {
 				selected_index++;
 			}
-		} else if (ch == (char)KEY_ENTER) {
-			//
+		} else if (ch == 10) {
+			if (contents[selected_index].filename() == "..") {
+                if (dir.has_parent_path()) {
+                    clear();
+                    browse_directory(dir.parent_path());
+                }
+            } else if (std::filesystem::is_directory(contents[selected_index])) {
+                clear();
+                browse_directory(contents[selected_index]);
+            } else {
+                clear();
+                edit_file(contents[selected_index]);
+            }
 		}
-		//printw("char: %d, KEY_ENTER: %d", ch, (char)KEY_ENTER);
-		//getch();
 		
 		clear();
 	}
@@ -128,7 +141,9 @@ void browse_directory(const std::filesystem::path& dir) {
 
 void edit_file(const std::filesystem::path& path) {
 	//
+    
 }
+
 
 void fatal_error(const char* fmt, ...) {
 	va_list args;
@@ -156,3 +171,5 @@ void sigint_handler(int dummy) {
 	endwin();
 	exit(1);
 }
+
+//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
