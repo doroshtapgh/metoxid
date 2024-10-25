@@ -15,7 +15,7 @@ int main(int argc, char* const argv[]) {
 
     try {
         string file(argv[1]);
-        Exiv2::Image::UniquePtr greg = Exiv2::ImageFactory::open(file);
+        Exiv2::Image::AutoPtr greg = Exiv2::ImageFactory::open(file);
         cout << "Hello world!" << endl;
     return 0;
         }
