@@ -1,36 +1,157 @@
-#include <iostream>
-#include <fstream>
+#if defined(linux) || defined(__linux) || defined(__linux__)
+#define LINUX_PLATFORM
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#define MACOS_PLATFORM
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#define WINDOWS_PLATFORM
+#else
+#error "Unsupported target platform."
+#endif
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
 #include <ncurses.h>
-#include <exiv2/exiv2.hpp>
-#include <gdal_priv.h>  // Include GDAL header
+#else
+#include <ncurses/ncurses.h>
+#endif
+#include <stdarg.h>
+#include <signal.h>
+#include <filesystem>
+#include <vector>
 
-int main() {
-    std::cout << "RUNNDING" << "\n";
-    // Initialize GDAL
-    GDALAllRegister();
+std::vector<std::filesystem::path> list_directory(const std::filesystem::path& dir);
+void browse_directory(const std::filesystem::path& dir);
+void edit_file(const std::filesystem::path& path);
+void fatal_error(const char* fmt, ...);
+void sigint_handler(int dummy);
 
-    // Initialize the screen
+int main(int argc, char* argv[]) {
+	signal(SIGINT, sigint_handler);
+
     initscr();
-    
-    // Get the screen size
-    int row, col;
-    getmaxyx(stdscr, row, col);
-    
-    // Print "Hello, World!" at the center of the screen
-    mvprintw(row / 2, (col - 12) / 2, "Hello, World!");
-    
-    // Refresh the screen to show the text
-    refresh();
-    
-    // Wait for user input
-    getch();
-    
-    // End the ncurses mode
-    endwin();
-    
+	keypad(stdscr, TRUE);
+
+	if (has_colors()) {
+		start_color();
+		init_pair(1, COLOR_RED, COLOR_BLACK);
+		init_pair(2, COLOR_BLACK, COLOR_WHITE);
+	}
+	
+	if (argc == 1) {
+		browse_directory(std::filesystem::current_path());
+	} else if (argc == 2) {
+		std::filesystem::path path(argv[1]);
+
+		if (std::filesystem::exists(path)) {
+			if (std::filesystem::is_regular_file(path)) {
+				edit_file(path);
+			} else if (std::filesystem::is_directory(path)) {
+				browse_directory(path);
+			} else {
+				fatal_error("%s is not a file or a directory.", argv[1]);
+			}
+		} else {
+			fatal_error("%s path doesn't exist.", argv[1]);
+		}
+	} else {
+		fatal_error("you can pass only one command line argument at a time.");
+	}
+
+	endwin();
+
     return 0;
 }
 
+std::vector<std::filesystem::path> list_directory(const std::filesystem::path& dir) {
+	std::vector<std::filesystem::path> contents;
 
-//g++ myprog.cpp -o myprog 
-//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses -lgdal
+	if (dir.has_parent_path()) {
+		contents.push_back(dir / "..");
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+		contents.push_back(entry.path());
+	}
+
+	return contents;
+}
+
+void browse_directory(const std::filesystem::path& dir) {
+	auto contents = list_directory(dir);
+	size_t num_of_elems = contents.size();
+	size_t selected_index = 0;
+	size_t offset = 0;
+	int row, col;
+
+	while (true) {
+		getmaxyx(stdscr, row, col);
+		
+		if (selected_index > row - 1) {
+			offset = selected_index - row - 1;
+		}
+
+		for (size_t i = 0; i < row; ++i) {
+			if (i + offset < num_of_elems) {
+				if (i == selected_index) {
+					attron(COLOR_PAIR(2));
+					printw("%s\n", contents[i + offset].filename().c_str());
+					attroff(COLOR_PAIR(2));
+				} else {
+					printw("%s\n", contents[i + offset].filename().c_str());
+				}
+			}
+		}
+
+		// printw("selected_index: %ld, num_of_elems: %ld\n", selected_index, num_of_elems);
+
+		refresh();
+
+		char ch = getch();
+
+		if (ch == (char)KEY_UP) {
+			if (selected_index > 0) {
+				selected_index--;
+			}
+		} else if (ch == (char)KEY_DOWN) {
+			if (selected_index + 1 < num_of_elems) {
+				selected_index++;
+			}
+		} else if (ch == (char)KEY_ENTER) {
+			//
+		}
+		//printw("char: %d, KEY_ENTER: %d", ch, (char)KEY_ENTER);
+		//getch();
+		
+		clear();
+	}
+}
+
+void edit_file(const std::filesystem::path& path) {
+	//
+}
+
+void fatal_error(const char* fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	
+	if (has_colors()) {
+		attron(COLOR_PAIR(1));
+		printw("fatal error: ");
+		attroff(COLOR_PAIR(1));
+	}
+
+	printw(fmt, args);
+	
+	va_end(args);
+
+	printw("\npress any key to exit.");
+
+	refresh();
+	getch();
+	endwin();
+	exit(1);
+}
+
+void sigint_handler(int dummy) {
+	endwin();
+	exit(1);
+}
