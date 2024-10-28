@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 
     initscr();
 	keypad(stdscr, TRUE);
+	curs_set(0);
 
 	if (has_colors()) {
 		start_color();
@@ -42,7 +43,7 @@ int main(int argc, char* argv[]) {
 	if (argc == 1) {
 		browse_directory(std::filesystem::current_path());
 	} else if (argc == 2) {
-		std::filesystem::path path(argv[1]);
+		std::filesystem::path path = std::filesystem::absolute(argv[1]);
 
 		if (std::filesystem::exists(path)) {
 			if (std::filesystem::is_regular_file(path)) {
@@ -89,14 +90,10 @@ void browse_directory(const std::filesystem::path& dir) {
 
 	while (true) {
 		getmaxyx(stdscr, row, col);
-		
-		if (selected_index > row - 1) {
-			offset = selected_index - row - 1;
-		}
 
 		for (size_t i = 0; i < row; ++i) {
 			if (i + offset < num_of_elems) {
-				if (i == selected_index) {
+				if (i + offset == selected_index) {
 					attron(COLOR_PAIR(2));
 					printw("%s\n", contents[i + offset].filename().c_str());
 					attroff(COLOR_PAIR(2));
@@ -106,8 +103,6 @@ void browse_directory(const std::filesystem::path& dir) {
 			}
 		}
 
-		//printw("selected_index: %ld, num_of_elems: %ld\n", selected_index, num_of_elems);
-
 		refresh();
 
 		char ch = getch();
@@ -115,24 +110,33 @@ void browse_directory(const std::filesystem::path& dir) {
 		if (ch == (char)KEY_UP) {
 			if (selected_index > 0) {
 				selected_index--;
+
+				if (selected_index < offset) {
+					offset--;
+				}
 			}
 		} else if (ch == (char)KEY_DOWN) {
 			if (selected_index + 1 < num_of_elems) {
 				selected_index++;
+
+				if (selected_index > offset + row - 1) {
+					offset++;
+				}
 			}
 		} else if (ch == 10) {
-			if (contents[selected_index].filename() == "..") {
-                if (dir.has_parent_path()) {
-                    clear();
-                    browse_directory(dir.parent_path());
-                }
-            } else if (std::filesystem::is_directory(contents[selected_index])) {
-                clear();
-                browse_directory(contents[selected_index]);
-            } else {
-                clear();
-                edit_file(contents[selected_index]);
-            }
+			if (std::filesystem::is_directory(contents[selected_index])) {
+				const auto canonical_path = std::filesystem::canonical(contents[selected_index]);
+				offset = 0;
+				selected_index = 0;
+				contents = list_directory(canonical_path);
+				num_of_elems = contents.size();
+			} else if (std::filesystem::is_regular_file(contents[selected_index])) {
+				clear();
+				edit_file(contents[selected_index]);
+				curs_set(1);
+				endwin();
+				exit(0);
+			}
 		}
 		
 		clear();
@@ -140,8 +144,7 @@ void browse_directory(const std::filesystem::path& dir) {
 }
 
 void edit_file(const std::filesystem::path& path) {
-	//
-    
+	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
 }
 
 
@@ -168,8 +171,7 @@ void fatal_error(const char* fmt, ...) {
 }
 
 void sigint_handler(int dummy) {
+	curs_set(1);
 	endwin();
 	exit(1);
 }
-
-//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
