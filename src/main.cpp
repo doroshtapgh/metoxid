@@ -80,6 +80,7 @@ std::vector<std::filesystem::path> list_directory(const std::filesystem::path& d
 }
 
 void browse_directory(const std::filesystem::path& dir) {
+ 
 	auto contents = list_directory(dir);
 	size_t num_of_elems = contents.size();
 	size_t selected_index = 0;
