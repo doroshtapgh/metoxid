@@ -15,6 +15,7 @@
 #else
 #include <ncurses/ncurses.h>
 #endif
+
 #include <stdarg.h>
 #include <signal.h>
 #include <filesystem>
@@ -144,7 +145,8 @@ void browse_directory(const std::filesystem::path& dir) {
 }
 
 void edit_file(const std::filesystem::path& path) {
-	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
+	
+
 }
 
 
@@ -175,3 +177,6 @@ void sigint_handler(int dummy) {
 	endwin();
 	exit(1);
 }
+
+
+//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
