@@ -10,25 +10,21 @@
 
 #if defined(LINUX_PLATFORM) || defined(MACOS_PLATFORM)
 #include <ncurses.h>
-#include <exiv2/exiv2.hpp>
-
 #else
-#include <ncurses/ncurses.h>
+#include <ncursesw/ncurses.h>
 #endif
+#include <metoxid.hpp>
 #include <stdarg.h>
 #include <signal.h>
 #include <filesystem>
 #include <vector>
 #include <iostream>
 
-std::vector<std::filesystem::path> list_directory(const std::filesystem::path& dir);
-void browse_directory(const std::filesystem::path& dir);
-void edit_file(const std::filesystem::path& path);
-void fatal_error(const char* fmt, ...);
-void sigint_handler(int dummy);
+void browseDirectory(const std::filesystem::path& dir);
+void editFile(const std::filesystem::path& path);
 
 int main(int argc, char* argv[]) {
-	signal(SIGINT, sigint_handler);
+	signal(SIGINT, sigintHandler);
 
     initscr();
 	
@@ -42,24 +38,24 @@ int main(int argc, char* argv[]) {
 	}
 	
 	if (argc == 1) {
-		browse_directory(std::filesystem::current_path());
+		browseDirectory(std::filesystem::current_path());
 	} else if (argc == 2) {
 		std::filesystem::path path = std::filesystem::absolute(argv[1]);
 
 		if (std::filesystem::exists(path)) {
 			if (std::filesystem::is_regular_file(path)) {
-				edit_file(path);
-                fatal_error("%s Will Edit Now", argv[1]);
+				editFile(path);
+                fatalError("%s Will Edit Now", argv[1]);
 			} else if (std::filesystem::is_directory(path)) {
-				browse_directory(path);
+				browseDirectory(path);
 			} else {
-				fatal_error("%s is not a file or a directory.", argv[1]);
+				fatalError("%s is not a file or a directory.", argv[1]);
 			}
 		} else {
-			fatal_error("%s path doesn't exist.", argv[1]);
+			fatalError("%s path doesn't exist.", argv[1]);
 		}
 	} else {
-		fatal_error("you can pass only one command line argument at a time.");
+		fatalError("you can pass only one command line argument at a time.");
 	}
 
 	endwin();
@@ -67,22 +63,8 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-std::vector<std::filesystem::path> list_directory(const std::filesystem::path& dir) {
-	std::vector<std::filesystem::path> contents;
-
-	if (dir.has_parent_path()) {
-		contents.push_back(dir / "..");
-	}
-
-	for (const auto& entry : std::filesystem::directory_iterator(dir)) {
-		contents.push_back(entry.path());
-	}
-
-	return contents;
-}
-
-void browse_directory(const std::filesystem::path& dir) {
-	auto contents = list_directory(dir);
+void browseDirectory(const std::filesystem::path& dir) {
+	auto contents = listDirectory(dir);
 	size_t num_of_elems = contents.size();
 	size_t selected_index = 0;
 	size_t offset = 0;
@@ -128,11 +110,11 @@ void browse_directory(const std::filesystem::path& dir) {
 				const auto canonical_path = std::filesystem::canonical(contents[selected_index]);
 				offset = 0;
 				selected_index = 0;
-				contents = list_directory(canonical_path);
+				contents = listDirectory(canonical_path);
 				num_of_elems = contents.size();
 			} else if (std::filesystem::is_regular_file(contents[selected_index])) {
 				clear();
-				edit_file(contents[selected_index]);
+				editFile(contents[selected_index]);
 				curs_set(1);
 				endwin();
 				exit(0);
@@ -143,35 +125,19 @@ void browse_directory(const std::filesystem::path& dir) {
 	}
 }
 
-void edit_file(const std::filesystem::path& path) {
+void editFile(const std::filesystem::path& path) {
 	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
-}
+	Metadata metadata(path);
 
+	int row, col;
 
-void fatal_error(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-	
-	if (has_colors()) {
-		attron(COLOR_PAIR(1));
-		printw("fatal error: ");
-		attroff(COLOR_PAIR(1));
+	while (true) {
+		getmaxyx(stdscr, row, col);
+
+		printw("%s\n", metadata.GetComment().c_str());
+		refresh();
+
+		getch();
+		clear();
 	}
-
-	printw(fmt, args);
-	
-	va_end(args);
-
-	printw("\npress any key to exit.");
-
-	refresh();
-	getch();
-	endwin();
-	exit(1);
-}
-
-void sigint_handler(int dummy) {
-	curs_set(1);
-	endwin();
-	exit(1);
 }
