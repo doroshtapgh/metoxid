@@ -109,7 +109,7 @@ void browse_directory(const std::filesystem::path& dir) {
 		//printw("selected_index: %ld, num_of_elems: %ld\n", selected_index, num_of_elems);
 
 		refresh();
-
+		
 		char ch = getch();
 
 		if (ch == (char)KEY_UP) {
