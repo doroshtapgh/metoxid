@@ -4,6 +4,18 @@ cmake_minimum_required(VERSION 3.11)
 
 project(metoxid)
 
+if (APPLE)
+    if (EXISTS "/opt/homebrew")
+        set(HOMEBREW_PREFIX "/opt/homebrew")
+    else()
+        set(HOMEBREW_PREFIX "/usr/local")
+    endif()
+
+    set(CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX}")
+    set(CMAKE_LIBRARY_PATH "${HOMEBREW_PREFIX}/lib")
+    set(CMAKE_INCLUDE_PATH "${HOMEBREW_PREFIX}/include")
+endif()
+
 find_package(Curses REQUIRED)
 find_package(exiv2 REQUIRED)
 find_package(Boost COMPONENTS container REQUIRED)
