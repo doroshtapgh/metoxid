@@ -1,5 +1,4 @@
-#include <metoxid/metadata.hpp>
-#include <metoxid/utils.hpp>
+#include <metoxid.hpp>
 #if defined(METOXID_LINUX) || defined(METOXID_MACOS)
 #include <ncurses.h>
 #else
