@@ -135,6 +135,7 @@ void editFile(const std::filesystem::path& path) {
 		getmaxyx(stdscr, row, col);
 
 		printw("%s\n", metadata.GetComment().c_str());
+		
 		refresh();
 
 		getch();
