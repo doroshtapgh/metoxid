@@ -4,6 +4,7 @@ project(metoxid)
 
 find_package(Curses REQUIRED)
 find_package(exiv2 REQUIRED)
+find_package(Boost COMPONENTS container REQUIRED)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/)
@@ -30,5 +31,7 @@ target_include_directories(metoxid PRIVATE /usr/local/Cellar/exiv2/0.28.3/includ
 target_include_directories(metoxid PRIVATE /usr/local/Cellar/ncurses/6.5/include)
 else()
 target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
+target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 endif()
 target_link_libraries(metoxid PRIVATE exiv2)
+target_link_libraries(metoxid PRIVATE ${Boost_CONTAINER_LIBRARY})

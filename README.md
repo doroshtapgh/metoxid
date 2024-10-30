@@ -1,6 +1,11 @@
 # Metoxid
 Metoxid - mediafile metadata editor, written in C++
 
+# Dependencies
+- ncurses
+- Exiv2
+- Boost.Container
+
 # Building on Windows
 ## Install MSYS2
 For compiling metoxid you need to install MSYS2 first: https://www.msys2.org/
