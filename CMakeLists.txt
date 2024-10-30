@@ -4,6 +4,7 @@ project(metoxid)
 
 find_package(Curses REQUIRED)
 find_package(exiv2 REQUIRED)
+find_package(Boost COMPONENTS container REQUIRED)
 
 set(SOURCES
     src/main.cpp
@@ -21,4 +22,6 @@ endif()
 
 target_include_directories(metoxid PRIVATE include)
 target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
+target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(metoxid PRIVATE exiv2)
+target_link_libraries(metoxid PRIVATE ${Boost_CONTAINER_LIBRARY})

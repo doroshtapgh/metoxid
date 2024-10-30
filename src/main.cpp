@@ -128,14 +128,12 @@ void browseDirectory(const std::filesystem::path& dir) {
 void editFile(const std::filesystem::path& path) {
 	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
 	Metadata metadata(path);
+	auto dict = metadata.GetDict();
 
 	int row, col;
 
 	while (true) {
 		getmaxyx(stdscr, row, col);
-
-		printw("%s\n", metadata.GetComment().c_str());
-		
 		refresh();
 
 		getch();
