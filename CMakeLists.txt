@@ -1,3 +1,5 @@
+
+
 cmake_minimum_required(VERSION 3.11)
 
 project(metoxid)
@@ -27,9 +29,9 @@ endif()
 message(STATUS "CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT}")
 target_include_directories(metoxid PRIVATE include)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-target_include_directories(metoxid PRIVATE /usr/local/Cellar/exiv2/0.28.3/include)
-target_include_directories(metoxid PRIVATE /usr/local/Cellar/ncurses/6.5/include)
+message(STATUS "YOU ARE ON MACOS")
 else()
+message(STATUS "YOU ARE ON SOMETHING OTHER THEN MAC")
 target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
 target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 endif()
