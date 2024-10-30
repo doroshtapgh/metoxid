@@ -19,15 +19,20 @@ struct MetadataField {
     // std::variant<std::string, std::unique_ptr<Exiv2::Value>> value;
 };
 
+struct Category {
+    std::string name;
+    FormatType type;
+};
+
 class Metadata {
 public:
     Metadata(const std::filesystem::path& file);
 
-    boost::container::flat_map<std::string, MetadataField> GetDict() const {
+    std::vector<Category> GetDict() const {
         return this->metadata_;
     }
 
-    void SetDict(const boost::container::flat_map<std::string, MetadataField>& dict) {
+    void SetDict(const std::vector<Category>& dict) {
         this->metadata_ = dict;
     }
 private:
@@ -40,7 +45,7 @@ private:
     Exiv2::XmpData xmp_data_;
     std::string xmp_packet_;
 
-    boost::container::flat_map<std::string, MetadataField> metadata_;
+    std::vector<Category> metadata_;
 
     // og values are impractical for editing
     // dict is not
