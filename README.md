@@ -4,7 +4,6 @@ Metoxid - mediafile metadata editor, written in C++
 # Dependencies
 - ncurses
 - Exiv2
-- Boost.Container
 
 # Building on Windows
 ## Install MSYS2

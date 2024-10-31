@@ -45,7 +45,9 @@ message(STATUS "YOU ARE ON MACOS")
 else()
 message(STATUS "YOU ARE ON SOMETHING OTHER THEN MAC")
 target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
+<<<<<<< HEAD
 target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 endif()
+=======
+>>>>>>> origin/main
 target_link_libraries(metoxid PRIVATE exiv2)
-target_link_libraries(metoxid PRIVATE ${Boost_CONTAINER_LIBRARY})

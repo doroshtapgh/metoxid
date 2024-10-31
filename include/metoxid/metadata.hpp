@@ -1,7 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <variant>
-#include <boost/container/flat_map.hpp>
+#include <unordered_map>
 #include <exiv2/exiv2.hpp>
 
 enum FormatType {
@@ -15,13 +15,15 @@ enum FormatType {
 
 struct MetadataField {
     FormatType format;
-    // TODO: add a field similar to something like this
-    // std::variant<std::string, std::unique_ptr<Exiv2::Value>> value;
+    std::variant<std::string, std::shared_ptr<Exiv2::Value>> value;
 };
 
 struct Category {
     std::string name;
     FormatType type;
+    std::unordered_map<std::string, MetadataField> fields;
+
+    Category(const std::string& name, FormatType type, const std::unordered_map<std::string, MetadataField>& fields), name(name), type(type), fields(fields) {}
 };
 
 class Metadata {
