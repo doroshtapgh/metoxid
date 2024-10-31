@@ -34,6 +34,4 @@ endif()
 
 target_include_directories(metoxid PRIVATE include)
 target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
-target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(metoxid PRIVATE exiv2)
-target_link_libraries(metoxid PRIVATE ${Boost_CONTAINER_LIBRARY})
