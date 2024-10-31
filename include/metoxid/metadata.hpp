@@ -4,29 +4,15 @@
 #include <unordered_map>
 #include <exiv2/exiv2.hpp>
 
-enum FormatType {
-    Comment,
-    Exif,
-    Icc,
-    Iptc,
-    XmpData,
-    XmpPacket
-};
-
-struct MetadataField {
-    FormatType format;
-    std::variant<std::string, std::shared_ptr<Exiv2::Value>> value;
-};
+using MetadataValue = std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>;
 
 struct Category {
     std::string name;
-    FormatType type;
     bool expanded;
-    std::unordered_map<std::string, MetadataField> fields;
+    std::unordered_map<std::string, MetadataValue> fields;
 
-    Category(const std::string& name, FormatType type, const std::unordered_map<std::string, MetadataField>& fields) {
+    Category(const std::string& name, const std::unordered_map<std::string, MetadataValue>& fields) {
         this->name = name;
-        this->type = type;
         this->expanded = false;
         this->fields = fields;
     }
