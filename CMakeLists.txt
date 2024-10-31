@@ -1,5 +1,3 @@
-
-
 cmake_minimum_required(VERSION 3.11)
 
 project(metoxid)
@@ -17,11 +15,16 @@ if (APPLE)
 endif()
 
 find_package(Curses REQUIRED)
-find_package(exiv2 REQUIRED)
 find_package(Boost COMPONENTS container REQUIRED)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/)
+set(EXIV2_INCLUDE_DIR "${HOMEBREW_PREFIX}/include")
+set(EXIV2_LIBRARY "${HOMEBREW_PREFIX}/lib/libexiv2.dylib")
+endif()
+
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/)
 endif()
 
 set(SOURCES
@@ -39,15 +42,13 @@ else()
 endif()
 
 message(STATUS "CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT}")
-target_include_directories(metoxid PRIVATE include)
+target_include_directories(metoxid PRIVATE include ${EXIV2_INCLUDE_DIR})
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-message(STATUS "YOU ARE ON MACOS")
+    message(STATUS "YOU ARE ON MACOS")
 else()
-message(STATUS "YOU ARE ON SOMETHING OTHER THEN MAC")
-target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
-<<<<<<< HEAD
-target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
+    message(STATUS "YOU ARE ON SOMETHING OTHER THAN MAC")
+    target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
+    target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
 endif()
-=======
->>>>>>> origin/main
-target_link_libraries(metoxid PRIVATE exiv2)
+
+target_link_libraries(metoxid PRIVATE ${EXIV2_LIBRARY} Boost::container)
