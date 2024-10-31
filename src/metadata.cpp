@@ -1,4 +1,5 @@
-#include <metoxid.hpp>
+#include <metoxid/metadata.hpp>
+#include <metoxid/utils.hpp>
 #if defined(METOXID_LINUX) || defined(METOXID_MACOS)
 #include <ncurses.h>
 #else
@@ -12,7 +13,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
         this->image_ = Exiv2::ImageFactory::open(file);
         image_->readMetadata();
     } catch (Exiv2::Error& err) {
-        fatalError("exiv2 error occured: %s", err.what());
+        fatalError("Failed to read file metadata, please check if the selected file is a media file: %s", err.what());
     } catch (const std::exception& e) {
         fatalError("%s", e.what());
     }
@@ -23,14 +24,5 @@ Metadata::Metadata(const std::filesystem::path& file) {
     this->iptc_data_ = image_->iptcData();
     this->xmp_data_ = image_->xmpData();
     this->xmp_packet_ = image_->xmpPacket();
-
-    if (!this->comment_.empty()) {
-        MetadataField field {
-            FormatType::Comment,
-            this->comment_
-        };
-
-        //this->metadata.push_back(category);
-    }
 }
 

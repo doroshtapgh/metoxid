@@ -22,11 +22,13 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
+void test();
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
 
     initscr();
+	test();
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
@@ -58,6 +60,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	endwin();
+	
+
 
     return 0;
 }
@@ -85,7 +89,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 		}
 
 		refresh();
-
+		
 		char ch = getch();
 
 		if (ch == (char)KEY_UP) {
@@ -127,15 +131,22 @@ void browseDirectory(const std::filesystem::path& dir) {
 void editFile(const std::filesystem::path& path) {
 	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
 	Metadata metadata(path);
-	auto dict = metadata.GetDict();
+	auto data = metadata.GetDict();
 
 	int row, col;
+	int offset;
 
 	while (true) {
 		getmaxyx(stdscr, row, col);
 		refresh();
-
+		for(size_t i = 0; i < data.size(); i++){
+			printw("%s\n", data[i].name);
+		}
 		getch();
 		clear();
 	}
 }
+
+
+
+
