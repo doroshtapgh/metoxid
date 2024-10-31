@@ -25,12 +25,14 @@ Metadata::Metadata(const std::filesystem::path& file) {
     this->xmp_packet_ = image_->xmpPacket();
 
     if (!this->comment_.empty()) {
-        MetadataField field {
-            FormatType::Comment,
-            this->comment_
-        };
+        Category category("Comment", FormatType::Comment, {
+            { "Comment", MetadataField {
+                FormatType::Comment,
+                this->comment_
+            } }
+        });
 
-        //this->metadata.push_back(category);
+        this->metadata_.push_back(category);
     }
 }
 
