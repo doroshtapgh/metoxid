@@ -22,13 +22,13 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
-
+void test();
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
 
     initscr();
-	
+	test();
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
@@ -199,11 +199,18 @@ void editFile(const std::filesystem::path& path) {
 
 	}
 }
+void test(){
+	std::vector<int> test(1,2,3);
+	int row, col;
+
+	getmaxyx(stdscr, row, col);
+	for(size_t i = 0; i < row; i++){
+		if(i < test.size()){
+			printw("%d\n", test[i]);
+		}
+	}
+	getch();
+}
 
 
-<<<<<<< HEAD
 
-
-=======
-//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
->>>>>>> origin/shrey
