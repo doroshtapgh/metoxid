@@ -201,5 +201,9 @@ void editFile(const std::filesystem::path& path) {
 }
 
 
+<<<<<<< HEAD
 
 
+=======
+//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
+>>>>>>> origin/shrey

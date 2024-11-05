@@ -44,11 +44,11 @@ public:
         this->metadata_ = dict;
     }
 private:
-    Exiv2::Image::AutoPtr image_;
+    std::unique_ptr<Exiv2::Image> image_;
     
     std::string comment_;
     Exiv2::ExifData exif_data_;
-    Exiv2::DataBuf* icc_profile_;
+    Exiv2::DataBuf icc_profile_;
     Exiv2::IptcData iptc_data_;
     Exiv2::XmpData xmp_data_;
     std::string xmp_packet_;
