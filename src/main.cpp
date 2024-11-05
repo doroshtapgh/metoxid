@@ -146,6 +146,8 @@ void editFile(const std::filesystem::path& path) {
 	}
 
 	size_t top_drop_index = 0;
+	int total_subtracts = 0;
+	int size = 0;
 	while (true) {
 		getmaxyx(stdscr, row, col);
 
@@ -161,20 +163,43 @@ void editFile(const std::filesystem::path& path) {
 					curs_set(1);
 					printw("  %s: ", field.first.c_str());
 
-					if (std::holds_alternative<std::string>(field.second)) {
-						printw("%s", std::get<std::string>(field.second).c_str());
+					std::visit([&](auto&& value) {
+						using T = std::decay_t<decltype(value)>;
+						if constexpr (std::is_same_v<T, std::string>) {
+							printw("%s", value.c_str());
+							move(1, value.length() - total_subtracts + 3 + field.first.length());
+							size = value.length();
+						} else if constexpr (std::is_same_v<T, int>) {
+							printw("%d", value);
+							move(1, std::to_string(value).length() - total_subtracts + 3 + field.first.length());
+							size = std::to_string(value).length();
+						} else if constexpr (std::is_same_v<T, double>) {
+							printw("%f", value);
+							move(1, std::to_string(value).length() - total_subtracts + 3 + field.first.length());
+							size = std::to_string(value).length();
+						}
+					}, field.second);
 
-					} else if (std::holds_alternative<int>(field.second)) {
-						printw("%d", std::get<int>(field.second));
-
-					} else if (std::holds_alternative<double>(field.second)) {
-						printw("%f", std::get<double>(field.second));
-
-					}
-
-					
+					}		
 				} 
+
+			char ch = getch();
+
+			if (ch == 10) {
+				editing = false;
+				curs_set(0);
+			} 
+			else if (ch == char(KEY_LEFT)) {
+				if (total_subtracts < size){
+					total_subtracts++;
+				}
 			}
+			else if (ch == char(KEY_RIGHT)) {
+				if (total_subtracts > 0){
+					total_subtracts--;
+				}
+			}
+			
 		}
 		else{
 			for (size_t i = 0; i < row; ++i) {
@@ -258,7 +283,6 @@ void editFile(const std::filesystem::path& path) {
 										printw("%f\n", std::get<double>(field.second));
 									}
 									attroff(COLOR_PAIR(1));
-									
 								}
 							}
 						} else {
@@ -272,57 +296,55 @@ void editFile(const std::filesystem::path& path) {
 
 		refresh();
 
-		char ch = getch();
+		if (!editing){
+			char ch = getch();
 
-		if (ch == (char)KEY_UP) {
-			if (selected_index > 0) {
-				selected_index--;
+			if (ch == (char)KEY_UP) {
+				if (selected_index > 0) {
+					selected_index--;
 
-				if (selected_index < offset) {
-					offset--;
+					if (selected_index < offset) {
+						offset--;
+					}
 				}
-			}
-		} else if (ch == (char)KEY_DOWN) {
-			if (selected_index + 1 < num_of_elems) {
-				selected_index++;
+			} else if (ch == (char)KEY_DOWN) {
+				if (selected_index + 1 < num_of_elems) {
+					selected_index++;
 
-				if (selected_index > offset + row - 1) {
-					offset++;
+					if (selected_index > offset + row - 1) {
+						offset++;
+					}
 				}
-			}
-		} else if (ch == 10) {
-			if (editing == true){
-				editing = false;
-			}
-			else{
-				editing = true;
-					for (int i = 0; i < drop_indices.size(); ++i) {
-						if (drop_indices[i] == selected_index) {
-							if (dict[i].expanded) {
-								dict[i].expanded = false;
-								int sizeof_fields = dict[i].fields.size();
-								num_of_elems = num_of_elems - sizeof_fields;
-								for (int j = 1; j < drop_indices.size() - i; ++j) {
-									drop_indices[j + i] = drop_indices[j + i] - sizeof_fields;
-								}
-								editing = false;
-								break;
-							} else {
-								dict[i].expanded = true;
-								int sizeof_fields = dict[i].fields.size();
-								num_of_elems = num_of_elems + sizeof_fields;
-								for (int j = 1; j < drop_indices.size() - i; ++j) {
-									drop_indices[j + i] = drop_indices[j + i] + sizeof_fields;
-								}
-								editing = false;
-								break;
+			} else if (ch == 10) {
+			editing = true;
+				for (int i = 0; i < drop_indices.size(); ++i) {
+					if (drop_indices[i] == selected_index) {
+						if (dict[i].expanded) {
+							dict[i].expanded = false;
+							int sizeof_fields = dict[i].fields.size();
+							num_of_elems = num_of_elems - sizeof_fields;
+							for (int j = 1; j < drop_indices.size() - i; ++j) {
+								drop_indices[j + i] = drop_indices[j + i] - sizeof_fields;
 							}
+							editing = false;
+							break;
+						} else {
+							dict[i].expanded = true;
+							int sizeof_fields = dict[i].fields.size();
+							num_of_elems = num_of_elems + sizeof_fields;
+							for (int j = 1; j < drop_indices.size() - i; ++j) {
+								drop_indices[j + i] = drop_indices[j + i] + sizeof_fields;
+							}
+							editing = false;
+							break;
 						}
 					}
-			}
+				}
+		
 
-		} else if (ch == '~') {
-			break; //REMEMBER TO REMOVE THIS LINE
+			} else if (ch == '~') {
+				break; //REMEMBER TO REMOVE THIS LINE
+			}
 		}
 
 		clear();
@@ -341,7 +363,3 @@ void editFile(const std::filesystem::path& path) {
 	refresh();
 	char hi = getch();
 }
-
-
-
-//g++ -o main src/main.cpp -I/usr/local/include -L/usr/local/lib -lexiv2 -lncurses
