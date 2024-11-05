@@ -21,9 +21,15 @@ struct MetadataField {
 struct Category {
     std::string name;
     FormatType type;
+    bool expanded;
     std::unordered_map<std::string, MetadataField> fields;
 
-    Category(const std::string& name, FormatType type, const std::unordered_map<std::string, MetadataField>& fields), name(name), type(type), fields(fields) {}
+    Category(const std::string& name, FormatType type, const std::unordered_map<std::string, MetadataField>& fields) {
+        this->name = name;
+        this->type = type;
+        this->expanded = false;
+        this->fields = fields;
+    }
 };
 
 class Metadata {

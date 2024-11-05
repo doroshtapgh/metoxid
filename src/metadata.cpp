@@ -24,5 +24,16 @@ Metadata::Metadata(const std::filesystem::path& file) {
     this->iptc_data_ = image_->iptcData();
     this->xmp_data_ = image_->xmpData();
     this->xmp_packet_ = image_->xmpPacket();
+
+    if (!this->comment_.empty()) {
+        Category category("Comment", FormatType::Comment, {
+            { "Comment", MetadataField {
+                FormatType::Comment,
+                this->comment_
+            } }
+        });
+
+        this->metadata_.push_back(category);
+    }
 }
 

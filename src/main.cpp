@@ -22,13 +22,13 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
-void test();
+
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
 
     initscr();
-	test();
+	
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
@@ -134,16 +134,69 @@ void editFile(const std::filesystem::path& path) {
 	auto data = metadata.GetDict();
 
 	int row, col;
-	int offset;
+	size_t offset = 0;
+	size_t curr_index = 0;
+	size_t max_possible_rows = data.size();
+	size_t opened_indices = 0;
 
 	while (true) {
 		getmaxyx(stdscr, row, col);
+		
+		for(size_t i = 0; i < row; i++){
+			if(i + offset < max_possible_rows){
+				if(i + offset == curr_index){
+					attron(COLOR_PAIR(2));
+					printw("%s\n", data[i + offset].name.c_str());
+					if(data[i + offset].expanded == true){
+						for(size_t j = 0; j < data[i + offset].fields.size(); j++){
+							printw(data[i + offset].fields[j][0],data[i + offset].fields[j][1]);
+						}
+					}
+					attroff(COLOR_PAIR(2));
+				}
+				else{
+					
+					printw("%s\n", data[i + offset].name.c_str());
+				}
+			}
+		}
 		refresh();
-		for(size_t i = 0; i < data.size(); i++){
-			printw("%s\n", data[i].name);
+		char ch = getch();
+		if (ch == (char)KEY_UP) {
+			if (curr_index > 0) {
+				curr_index--;
+
+				if (curr_index < offset) {
+					offset--;
+				}
+			}
+		} else if (ch == (char)KEY_DOWN) {
+			if (curr_index + 1 < data.size()) {
+				curr_index++;
+
+				if (curr_index > offset + row - 1) {
+					offset++;
+				}
+			}
+		
+		} else if (ch = 10){
+			if(data[offset - opened_indices].expanded == false){
+				data[offset - opened_indices].expanded = true;
+				opened_indices += data[offset-opened_indices].fields.size();
+				max_possible_rows += data[offset-opened_indices].fields.size();
+
+
+			}
+			else if(data[offset - opened_indices].expanded == true){
+				data[offset - opened_indices].expanded = false;
+				opened_indices -= data[offset-opened_indices].fields.size();
+				max_possible_rows -= data[offset-opened_indices].fields.size();
+			}
 		}
 		getch();
 		clear();
+		exit(0);
+
 	}
 }
 
