@@ -124,6 +124,27 @@ void browseDirectory(const std::filesystem::path& dir) {
 	}
 }
 
+int getTopVisibleDropdownIndex(const std::vector<Category>& dict, size_t offset, int row) {
+    size_t current_line = 0; // Track lines currently displayed
+    for (size_t i = offset; i < dict.size(); ++i) {
+        if (current_line == 0) {
+            return i;
+        }
+
+        current_line++;
+
+        if (dict[i].expanded) {
+            current_line += dict[i].fields.size();
+        }
+
+        if (current_line >= row) {
+            break;
+        }
+    }
+
+    return -1; // Return -1 if no dropdowns are visible (unlikely)
+}
+
 void editFile(const std::filesystem::path& path) {
 	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
 	// MAYBE LEFT CLICK TO GO INTO???
