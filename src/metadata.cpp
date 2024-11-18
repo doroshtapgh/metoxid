@@ -18,11 +18,10 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 
     this->comment_ = image_->comment();
+    this->xmp_packet_ = image_->xmpPacket();
     this->exif_data_ = image_->exifData();
-    this->icc_profile_ = image_->iccProfile();
     this->iptc_data_ = image_->iptcData();
     this->xmp_data_ = image_->xmpData();
-    this->xmp_packet_ = image_->xmpPacket();
 
     if (!this->comment_.empty()) {
         Category category("Comment", {
@@ -33,16 +32,50 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 
     if (!this->exif_data_.empty()) {
-        std::unordered_map<std::string, MetadataValue> fields;
+        std::map<std::string, MetadataValue> fields;
 
         for (const auto& exif_entry : this->exif_data_) {
             std::string key = exif_entry.key();
             MetadataValue value = exif_entry.value();
-            auto field = std::make_pair(key, value);
-            fields.insert(field);
+            fields.insert({key, value});
         }
 
         Category category("Exif", fields);
+        this->metadata_.push_back(category);
+    }
+
+    if (!this->iptc_data_.empty()) {
+        std::map<std::string, MetadataValue> fields;
+
+        for (const auto& iptc_entry : this->iptc_data_) {
+            std::string key = iptc_entry.key();
+            MetadataValue value = iptc_entry.value();
+            fields.insert({key, value});
+        }
+
+        Category category("IPTC", fields);
+        this->metadata_.push_back(category);
+    }
+
+    if (!this->xmp_data_.empty()) {
+        std::map<std::string, MetadataValue> fields;
+
+        for (const auto& xmp_entry : this->xmp_data_) {
+            std::string key = xmp_entry.key();
+            MetadataValue value = xmp_entry.value();
+            fields.insert({key, value});
+        }
+
+        Category category("XMP Data", fields);
+        this->metadata_.push_back(category);
+    }
+
+    if (!this->xmp_packet_.empty()) {
+        Category category("XMP Packet", {
+            { "XMP Packet", this->xmp_packet_ }
+        });
+
+        this->metadata_.push_back(category);
     }
 }
 
