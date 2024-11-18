@@ -45,4 +45,3 @@ Metadata::Metadata(const std::filesystem::path& file) {
         Category category("Exif", fields);
     }
 }
-
