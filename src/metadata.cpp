@@ -79,4 +79,3 @@ Metadata::Metadata(const std::filesystem::path& file) {
         this->metadata_.push_back(category);
     }
 }
-
