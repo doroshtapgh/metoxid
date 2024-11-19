@@ -33,7 +33,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 
     if (!this->exif_data_.empty()) {
-        std::map<std::string, MetadataValue> fields;
+        std::unordered_map<std::string, MetadataValue> fields;
 
         for (const auto& exif_entry : this->exif_data_) {
             std::string key = exif_entry.key();
@@ -46,7 +46,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 
     if (!this->iptc_data_.empty()) {
-        std::map<std::string, MetadataValue> fields;
+        std::unordered_map<std::string, MetadataValue> fields;
 
         for (const auto& iptc_entry : this->iptc_data_) {
             std::string key = iptc_entry.key();
@@ -59,7 +59,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 
     if (!this->xmp_data_.empty()) {
-        std::map<std::string, MetadataValue> fields;
+        std::unordered_map<std::string, MetadataValue> fields;
 
         for (const auto& xmp_entry : this->xmp_data_) {
             std::string key = xmp_entry.key();

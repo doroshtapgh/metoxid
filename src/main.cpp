@@ -22,13 +22,13 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
-void test();
+
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
 
     initscr();
-	test();
+	
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
@@ -162,7 +162,13 @@ void editFile(const std::filesystem::path& path) {
 	int editing_field = 0;
 
 	std::vector<int> drop_indices;
-
+	
+	//for(size_t i = 0; i < dict.size(); i++){
+	//	printw("%s\n", dict[i].name.c_str());
+		
+	//}
+	
+	
 	for (size_t i = 0; i < num_of_elems; ++i) {
 		drop_indices.push_back(i);
 	}
@@ -494,10 +500,11 @@ void editFile(const std::filesystem::path& path) {
 	printw("Number of elements: %zu\n", num_of_elems);
 	printw("Selected index: %zu\n", selected_index);
 	printw("Offset: %zu\n", offset);
-	printw("NON Offset: %zu\n", non_catagory_offest);
+	printw("NON Offset: %d\n", non_catagory_offest);
 	printw("editing name: %s\n", editing_name.c_str());
 	refresh();
 	char hi = getch();
+	
 }
 
 
