@@ -26,14 +26,24 @@ Metadata::Metadata(const std::filesystem::path& file) {
     this->xmp_packet_ = image_->xmpPacket();
 
     if (!this->comment_.empty()) {
-        Category category("Comment", FormatType::Comment, {
-            { "Comment", MetadataField {
-                FormatType::Comment,
-                this->comment_
-            } }
+        Category category("Comment", {
+            { "Comment", this->comment_ }
         });
 
         this->metadata_.push_back(category);
+    }
+
+    if (!this->exif_data_.empty()) {
+        std::unordered_map<std::string, MetadataValue> fields;
+
+        for (const auto& exif_entry : this->exif_data_) {
+            std::string key = exif_entry.key();
+            MetadataValue value = exif_entry.value();
+            auto field = std::make_pair(key, value);
+            fields.insert(field);
+        }
+
+        Category category("Exif", fields);
     }
 }
 

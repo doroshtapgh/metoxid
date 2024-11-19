@@ -1,28 +1,13 @@
-
-
 cmake_minimum_required(VERSION 3.11)
 
 project(metoxid)
 
-if (APPLE)
-    if (EXISTS "/opt/homebrew")
-        set(HOMEBREW_PREFIX "/opt/homebrew")
-    else()
-        set(HOMEBREW_PREFIX "/usr/local")
-    endif()
-
-    set(CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX}")
-    set(CMAKE_LIBRARY_PATH "${HOMEBREW_PREFIX}/lib")
-    set(CMAKE_INCLUDE_PATH "${HOMEBREW_PREFIX}/include")
-endif()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Curses REQUIRED)
 find_package(exiv2 REQUIRED)
-find_package(Boost COMPONENTS container REQUIRED)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-set(CMAKE_OSX_SYSROOT /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/)
-endif()
 
 set(SOURCES
     src/main.cpp
@@ -38,16 +23,6 @@ else()
     message(FATAL_ERROR "Could not find the ncurses library")
 endif()
 
-message(STATUS "CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT}")
-target_include_directories(metoxid PRIVATE include)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-message(STATUS "YOU ARE ON MACOS")
-else()
-message(STATUS "YOU ARE ON SOMETHING OTHER THEN MAC")
-target_include_directories(metoxid PRIVATE ${exiv2_INCLUDE_DIRS})
-<<<<<<< HEAD
-target_include_directories(metoxid PRIVATE ${Boost_INCLUDE_DIRS})
-endif()
-=======
->>>>>>> origin/main
+# Use Exiv2 include and library paths
+target_include_directories(metoxid PRIVATE include ${Exiv2_INCLUDE_DIRS})
 target_link_libraries(metoxid PRIVATE exiv2)

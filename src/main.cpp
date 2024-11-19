@@ -130,87 +130,242 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 void editFile(const std::filesystem::path& path) {
 	// NOTE: curs_set(0) is used in main function, use curs_set(1) during actual editing of a field's value
+	// MAYBE LEFT CLICK TO GO INTO???
+	//ADD ACTULL VALUE COUNTER AND TRY TO FIX THE NULL, MAYBE MAKE A PROPER THING??
+	//Num of elements cause bug becayse you can't see at bottom, so is replaced with null.
 	Metadata metadata(path);
-	auto data = metadata.GetDict();
-
-	int row, col;
+	auto dict = metadata.GetDict();
+	size_t num_of_elems = dict.size();
+	size_t selected_index = 0;
 	size_t offset = 0;
-	size_t curr_index = 0;
-	size_t max_possible_rows = data.size();
-	size_t opened_indices = 0;
+	int row, col;
+	bool editing = false;
+	std::string editing_name = "";
+	int editing_field = 0;
 
+	std::vector<int> drop_indices;
+
+	for (size_t i = 0; i < num_of_elems; ++i) {
+		drop_indices.push_back(i);
+	}
+
+	size_t top_drop_index = 0;
+	int total_subtracts = 0;
+	int size = 0;
 	while (true) {
 		getmaxyx(stdscr, row, col);
-		
-		for(size_t i = 0; i < row; i++){
-			if(i + offset < max_possible_rows){
-				if(i + offset == curr_index){
-					attron(COLOR_PAIR(2));
-					printw("%s\n", data[i + offset].name.c_str());
-					if(data[i + offset].expanded == true){
-						for(size_t j = 0; j < data[i + offset].fields.size(); j++){
-							printw(data[i + offset].fields[j][0],data[i + offset].fields[j][1]);
+
+		size_t actual_values = 0;
+
+
+		if (editing){
+			printw("Editing %s\n", dict[editing_field].name.c_str());
+			
+			for (auto& field : dict[editing_field].fields) {
+				if (editing_name == field.first) {
+					
+					curs_set(1);
+					printw("  %s: ", field.first.c_str());
+
+					std::visit([&](auto&& value) {
+						using T = std::decay_t<decltype(value)>;
+						if constexpr (std::is_same_v<T, std::string>) {
+							printw("%s", value.c_str());
+							move(1, value.length() - total_subtracts + 3 + field.first.length());
+							size = value.length();
+						} else if constexpr (std::is_same_v<T, int>) {
+							printw("%d", value);
+							move(1, std::to_string(value).length() - total_subtracts + 3 + field.first.length());
+							size = std::to_string(value).length();
+						} else if constexpr (std::is_same_v<T, double>) {
+							printw("%f", value);
+							move(1, std::to_string(value).length() - total_subtracts + 3 + field.first.length());
+							size = std::to_string(value).length();
+						}
+					}, field.second);
+
+					}		
+				} 
+
+			char ch = getch();
+
+			if (ch == 10) {
+				editing = false;
+				curs_set(0);
+			} 
+			else if (ch == char(KEY_LEFT)) {
+				if (total_subtracts < size){
+					total_subtracts++;
+				}
+			}
+			else if (ch == char(KEY_RIGHT)) {
+				if (total_subtracts > 0){
+					total_subtracts--;
+				}
+			}
+			
+		}
+		else{
+			for (size_t i = 0; i < row; ++i) {
+
+				top_drop_index = getTopVisibleDropdownIndex(dict, offset, row);
+
+				/*if (top_drop_index > 0) {
+					top_drop_index = top_drop_index - 1;
+					if (dict[top_drop_index].expanded) {
+					for (auto& field : dict[top_drop_index].fields) {
+						i += 1;
+						if (i < row){
+							printw("  %s: ", field.first.c_str());
+							attron(COLOR_PAIR(1));
+							if (std::holds_alternative<std::string>(field.second)) {
+								printw("%s\n", std::get<std::string>(field.second).c_str());
+							} else if (std::holds_alternative<int>(field.second)) {
+								printw("%d\n", std::get<int>(field.second));
+							} else if (std::holds_alternative<double>(field.second)) {
+								printw("%f\n", std::get<double>(field.second));
+							}
+							attroff(COLOR_PAIR(1));
 						}
 					}
-					attroff(COLOR_PAIR(2));
 				}
-				else{
-					
-					printw("%s\n", data[i + offset].name.c_str());
+				}*/
+
+				if (i + offset < num_of_elems) {
+
+					if (i + offset == selected_index) {
+						attron(COLOR_PAIR(2));
+						if (dict[actual_values + offset].expanded) {
+							printw("v %s\n", dict[actual_values + offset].name.c_str());
+						} else {
+							printw("> %s\n", dict[actual_values + offset].name.c_str());
+						}
+						attroff(COLOR_PAIR(2));
+
+						if (dict[actual_values + offset].expanded) {
+
+							for (auto& field : dict[actual_values + offset].fields) {
+								i += 1;
+								if (i < row){
+									
+									printw("  %s: ", field.first.c_str());
+									attron(COLOR_PAIR(1));
+									if (std::holds_alternative<std::string>(field.second)) {
+										printw("%s\n", std::get<std::string>(field.second).c_str());
+									} else if (std::holds_alternative<int>(field.second)) {
+										printw("%d\n", std::get<int>(field.second));
+									} else if (std::holds_alternative<double>(field.second)) {
+										printw("%f\n", std::get<double>(field.second));
+									}
+									attroff(COLOR_PAIR(1));
+								}
+							}
+						}
+					} else {
+						if (dict[actual_values + offset].expanded) {
+							printw("v %s\n", dict[actual_values + offset].name.c_str());
+
+							for (auto& field : dict[actual_values + offset].fields) {
+								i += 1;
+
+								if (i < row){
+									
+									if (i + offset == selected_index) {
+										attron(COLOR_PAIR(2));
+										editing_name = field.first;
+										editing_field = actual_values;
+									}
+									printw("  %s: ", field.first.c_str());
+									attroff(COLOR_PAIR(2));
+
+									attron(COLOR_PAIR(1));
+									if (std::holds_alternative<std::string>(field.second)) {
+										printw("%s\n", std::get<std::string>(field.second).c_str());
+									} else if (std::holds_alternative<int>(field.second)) {
+										printw("%d\n", std::get<int>(field.second));
+									} else if (std::holds_alternative<double>(field.second)) {
+										printw("%f\n", std::get<double>(field.second));
+									}
+									attroff(COLOR_PAIR(1));
+								}
+							}
+						} else {
+							printw("> %s\n", dict[actual_values + offset].name.c_str());
+						}
+					}
+					actual_values ++;
 				}
 			}
 		}
+
 		refresh();
-		char ch = getch();
-		if (ch == (char)KEY_UP) {
-			if (curr_index > 0) {
-				curr_index--;
 
-				if (curr_index < offset) {
-					offset--;
-				}
-			}
-		} else if (ch == (char)KEY_DOWN) {
-			if (curr_index + 1 < data.size()) {
-				curr_index++;
+		if (!editing){
+			char ch = getch();
 
-				if (curr_index > offset + row - 1) {
-					offset++;
+			if (ch == (char)KEY_UP) {
+				if (selected_index > 0) {
+					selected_index--;
+
+					if (selected_index < offset) {
+						offset--;
+					}
 				}
-			}
+			} else if (ch == (char)KEY_DOWN) {
+				if (selected_index + 1 < num_of_elems) {
+					selected_index++;
+
+					if (selected_index > offset + row - 1) {
+						offset++;
+					}
+				}
+			} else if (ch == 10) {
+			editing = true;
+				for (int i = 0; i < drop_indices.size(); ++i) {
+					if (drop_indices[i] == selected_index) {
+						if (dict[i].expanded) {
+							dict[i].expanded = false;
+							int sizeof_fields = dict[i].fields.size();
+							num_of_elems = num_of_elems - sizeof_fields;
+							for (int j = 1; j < drop_indices.size() - i; ++j) {
+								drop_indices[j + i] = drop_indices[j + i] - sizeof_fields;
+							}
+							editing = false;
+							break;
+						} else {
+							dict[i].expanded = true;
+							int sizeof_fields = dict[i].fields.size();
+							num_of_elems = num_of_elems + sizeof_fields;
+							for (int j = 1; j < drop_indices.size() - i; ++j) {
+								drop_indices[j + i] = drop_indices[j + i] + sizeof_fields;
+							}
+							editing = false;
+							break;
+						}
+					}
+				}
 		
-		} else if (ch = 10){
-			if(data[offset - opened_indices].expanded == false){
-				data[offset - opened_indices].expanded = true;
-				opened_indices += data[offset-opened_indices].fields.size();
-				max_possible_rows += data[offset-opened_indices].fields.size();
 
-
-			}
-			else if(data[offset - opened_indices].expanded == true){
-				data[offset - opened_indices].expanded = false;
-				opened_indices -= data[offset-opened_indices].fields.size();
-				max_possible_rows -= data[offset-opened_indices].fields.size();
+			} else if (ch == '~') {
+				break; //REMEMBER TO REMOVE THIS LINE
 			}
 		}
-		getch();
+
 		clear();
 		exit(0);
 
 	}
-}
-void test(){
-	std::vector<int> test(1,2,3);
-	int row, col;
 
-	getmaxyx(stdscr, row, col);
-	for(size_t i = 0; i < row; i++){
-		if(i < test.size()){
-			printw("%d\n", test[i]);
-		}
+	clear();
+	printw("Drop indices size: %zu\n", drop_indices.size());
+	for (int i = 0; i < drop_indices.size(); ++i) {
+		printw("%d\n", drop_indices[i]);
 	}
-	getch();
+	printw("Press any key to exit.");
+	printw("Number of elements: %zu\n", num_of_elems);
+	printw("Selected index: %zu\n", selected_index);
+	printw("Offset: %zu\n", offset);
+	printw("Top drop index: %zu\n", top_drop_index);
+	refresh();
+	char hi = getch();
 }
-
-
-
