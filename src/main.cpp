@@ -256,7 +256,7 @@ void editFile(const std::filesystem::path& path) {
 						attroff(COLOR_PAIR(2));
 
 						if (dict[curr_index].expanded) {
-
+								
 							for (auto& field : dict[curr_index].fields) {
 								i += 1;
 								if (i < row){
@@ -264,7 +264,7 @@ void editFile(const std::filesystem::path& path) {
 									printw("  %s:", field.first.c_str());
 									attron(COLOR_PAIR(1));
 									
-									printw(" %s\n", std::get<std::string>(field.second).c_str());
+									//printw(" %s\n", std::get<MetadataValue>(field.second).c_str()); //WAS STD::SRING BEFOREEEEEEEEEEEEEEEE
 
 									attroff(COLOR_PAIR(1));
 								}
@@ -273,7 +273,7 @@ void editFile(const std::filesystem::path& path) {
 					} else {
 						if (dict[curr_index].expanded) {
 							printw("v %s\n", dict[curr_index].name.c_str());
-
+							
 							for (auto& field : dict[curr_index].fields) {
 								i += 1;
 
@@ -295,6 +295,7 @@ void editFile(const std::filesystem::path& path) {
 											if constexpr (std::is_same_v<T, std::string>) {
 												
 												printw(" ");
+												
 												for(int i = 0; i < value.length(); i++){
 													char c = value[i];
 
@@ -336,6 +337,7 @@ void editFile(const std::filesystem::path& path) {
 									}
 								}
 							}
+							
 						} else {
 							printw("> %s\n", dict[curr_index].name.c_str());
 						}
@@ -349,10 +351,12 @@ void editFile(const std::filesystem::path& path) {
 
 		char ch = getch();
 		if (!editing){
+			
 			if (ch == (char)KEY_UP) {
+				
 				if (selected_index > 0) {
 					selected_index--;
-
+					
 					if (selected_index < offset) {
 						offset--;
 
@@ -413,11 +417,10 @@ void editFile(const std::filesystem::path& path) {
 						}
 					}
 				}
-		
-
 			} else if (ch == '~') {
 				break; //REMEMBER TO REMOVE THIS LINE
 			}
+			
 		}
 		else{
 			refresh();
@@ -466,21 +469,16 @@ void editFile(const std::filesystem::path& path) {
 		}
 
 		clear();
-		exit(0);
-
 	}
 
 	clear();
-	printw("Drop indices size: %zu\n", drop_indices.size());
-	for (int i = 0; i < drop_indices.size(); ++i) {
-		printw("%d\n", drop_indices[i]);
-	}
+	printw("%d\n", curr_index);
+	printw("%ld\n", offset);
+	printw("%d\n", num_of_elems);
 	printw("Press any key to exit.");
-	printw("Number of elements: %zu\n", num_of_elems);
-	printw("Selected index: %zu\n", selected_index);
-	printw("Offset: %zu\n", offset);
-	printw("NON Offset: %d\n", non_catagory_offest);
-	printw("editing name: %s\n", editing_name.c_str());
+	printw("sadge :(");
+	
+	
 	refresh();
 	char hi = getch();
 	
