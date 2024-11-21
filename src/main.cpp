@@ -22,7 +22,7 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
-
+void printEditingValueAndCursor(std::string value, int total_subtracts);
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
@@ -138,6 +138,7 @@ void editFile(const std::filesystem::path& path) {
 	int row, col;
 	bool editing = false;
 	std::string editing_name = "";
+	std::string temp = "";
 	int editing_field = 0;
 
 	std::vector<int> drop_indices;
@@ -197,39 +198,22 @@ void editFile(const std::filesystem::path& path) {
 											using T = std::decay_t<decltype(value)>;
 											if constexpr (std::is_same_v<T, std::string>) {
 												
-												printw(" ");
-												for(int i = 0; i < value.length(); i++){
-													char c = value[i];
+												printEditingValueAndCursor(value,total_subtracts);
 
-													if (i == value.length() - total_subtracts){
-														attroff(COLOR_PAIR(1));
-														attron(COLOR_PAIR(2));
-														printw("%c", c);
-														
-														attroff(COLOR_PAIR(2));
-														attron(COLOR_PAIR(1));
-													}
-													else{
-														printw("%c", c);
-													}
 													
-												}
-												if (total_subtracts == 0){
-													attroff(COLOR_PAIR(1));
-													attron(COLOR_PAIR(2));
-													printw(" ");
-													attroff(COLOR_PAIR(2));
-													attron(COLOR_PAIR(1));
-													
-												}
 												
 												editing_data = value;
 												size = value.length();
 												
 											}
 											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-												printw(" %s\n", value.get().toString().c_str()); //REMEMBER TO CHANGE LOGIC FOR EDITING
+												temp = value.get().toString().c_str();
+												printEditingValueAndCursor(value,total_subtracts);
+
+													
 												
+												editing_data = value;
+												size = value.length();
 											}
 									
 											
@@ -325,38 +309,14 @@ void editFile(const std::filesystem::path& path) {
 											using T = std::decay_t<decltype(value)>;
 											if constexpr (std::is_same_v<T, std::string>) {
 												
-												printw(" ");
-												
-												for(int i = 0; i < value.length(); i++){
-													char c = value[i];
-
-													if (i == value.length() - total_subtracts){
-														attroff(COLOR_PAIR(1));
-														attron(COLOR_PAIR(2));
-														printw("%c", c);
-														
-														attroff(COLOR_PAIR(2));
-														attron(COLOR_PAIR(1));
-													}
-													else{
-														printw("%c", c);
-													}
-													
-												}
-												if (total_subtracts == 0){
-													attroff(COLOR_PAIR(1));
-													attron(COLOR_PAIR(2));
-													printw(" ");
-													attroff(COLOR_PAIR(2));
-													attron(COLOR_PAIR(1));
-													
-												}
+												printEditingValueAndCursor(value,total_subtracts);
 												
 												editing_data = value;
 												size = value.length();
 												
 												
 											}
+											else if constexpr (std::is_same_v)
 										}, field.second);
 										attroff(COLOR_PAIR(1));
 										printw("\n");
@@ -527,4 +487,32 @@ void editFile(const std::filesystem::path& path) {
 	
 }
 
+void printEditingValueAndCursor(std::string value, int total_subtracts) {
+	printw(" ");
+												
+	for(int i = 0; i < value.length(); i++){
+		char c = value[i];
+
+		if (i == value.length() - total_subtracts){
+			attroff(COLOR_PAIR(1));
+			attron(COLOR_PAIR(2));
+			printw("%c", c);
+			
+			attroff(COLOR_PAIR(2));
+			attron(COLOR_PAIR(1));
+		}
+		else{
+			printw("%c", c);
+		}
+		
+	}
+	if (total_subtracts == 0){
+		attroff(COLOR_PAIR(1));
+		attron(COLOR_PAIR(2));
+		printw(" ");
+		attroff(COLOR_PAIR(2));
+		attron(COLOR_PAIR(1));
+		
+	}
+}
 
