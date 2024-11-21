@@ -178,7 +178,10 @@ void editFile(const std::filesystem::path& path) {
 							for (auto& field : dict[j-1].fields) {
 								
 								if (top_down_increament == offset){
-									i += 1;					
+									i += 1;
+									if (i > row){
+										break;
+									}					
 									if (i + offset == selected_index+1) {
 										attron(COLOR_PAIR(2));
 										editing_name = field.first;
@@ -224,13 +227,29 @@ void editFile(const std::filesystem::path& path) {
 												size = value.length();
 												
 											}
+											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+												printw(" %s\n", value.get().toString().c_str()); //REMEMBER TO CHANGE LOGIC FOR EDITING
+												
+											}
+									
+											
 										}, field.second);
 										attroff(COLOR_PAIR(1));
 										printw("\n");
 									} 
 									else {
 										attron(COLOR_PAIR(1));
-										printw(" %s\n", std::get<std::string>(field.second).c_str());
+										std::visit([&](auto&& value){
+											using T = std::decay_t<decltype(value)>;
+											if constexpr(std::is_same_v<T, std::string>){
+												printw(" %s\n", value.c_str());
+
+											}
+											else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+												printw(" %s\n", value.get().toString().c_str());
+												
+											}
+										}, field.second);
 										attroff(COLOR_PAIR(1));
 									}
 								}else{
@@ -242,7 +261,7 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 
-				if (i + offset < num_of_elems) {
+				if (i + offset < num_of_elems && i < row) {
 
 					curr_index = actual_values + offset - non_catagory_offest;
 
@@ -264,7 +283,19 @@ void editFile(const std::filesystem::path& path) {
 									printw("  %s:", field.first.c_str());
 									attron(COLOR_PAIR(1));
 									
-									//printw(" %s\n", std::get<MetadataValue>(field.second).c_str()); //WAS STD::SRING BEFOREEEEEEEEEEEEEEEE
+									std::visit([&](auto&& value){
+										using T = std::decay_t<decltype(value)>;
+										if constexpr(std::is_same_v<T, std::string>){
+											printw(" %s\n", value.c_str());
+
+										}
+										else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+											printw(" %s\n", value.get().toString().c_str());
+											
+										}
+									}, field.second);
+									
+									
 
 									attroff(COLOR_PAIR(1));
 								}
@@ -332,7 +363,17 @@ void editFile(const std::filesystem::path& path) {
 									} 
 									else {
 										attron(COLOR_PAIR(1));
-										printw(" %s\n", std::get<std::string>(field.second).c_str());
+										std::visit([&](auto&& value){
+											using T = std::decay_t<decltype(value)>;
+											if constexpr(std::is_same_v<T, std::string>){
+												printw(" %s\n", value.c_str());
+
+											}
+											else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+												printw(" %s\n", value.get().toString().c_str());
+												
+											}
+										}, field.second);
 										attroff(COLOR_PAIR(1));
 									}
 								}
@@ -475,6 +516,8 @@ void editFile(const std::filesystem::path& path) {
 	printw("%d\n", curr_index);
 	printw("%ld\n", offset);
 	printw("%d\n", num_of_elems);
+	printw("%s\n", editing_name.c_str());
+	printw("%d\n", editing_field);
 	printw("Press any key to exit.");
 	printw("sadge :(");
 	
