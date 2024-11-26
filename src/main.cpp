@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <vector>
 #include <iostream>
+#include <optional>
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
@@ -140,6 +141,8 @@ void editFile(const std::filesystem::path& path) {
 	std::string editing_name = "";
 	std::string temp = "";
 	int editing_field = 0;
+	bool exiv_value = false;
+	char prev_char = 'a';
 
 	std::vector<int> drop_indices;
 	
@@ -203,17 +206,17 @@ void editFile(const std::filesystem::path& path) {
 													
 												
 												editing_data = value;
-												size = value.length();
+												size = value.size();
 												
 											}
-											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){ //must copy paste
 												temp = value.get().toString().c_str();
-												printEditingValueAndCursor(value,total_subtracts);
+												printEditingValueAndCursor(temp,total_subtracts);
 
 													
 												
-												editing_data = value;
-												size = value.length();
+												editing_data = temp;
+												size = temp.length();
 											}
 									
 											
@@ -313,10 +316,20 @@ void editFile(const std::filesystem::path& path) {
 												
 												editing_data = value;
 												size = value.length();
+												exiv_value = false;
 												
 												
 											}
-											else if constexpr (std::is_same_v)
+											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){ //must copy paste
+												temp = value.get().toString().c_str();
+												printEditingValueAndCursor(temp,total_subtracts);
+
+													
+												
+												editing_data = temp;
+												size = temp.size();
+												exiv_value = true;
+											}
 										}, field.second);
 										attroff(COLOR_PAIR(1));
 										printw("\n");
@@ -442,8 +455,8 @@ void editFile(const std::filesystem::path& path) {
 				}
 			}
 			else{
+				
 				if (ch == 127){
-
 					if (editing_data.length() != 0 && total_subtracts != editing_data.length()){
 						if (total_subtracts == 0){
 							editing_data.erase(editing_data.end() - 1);
@@ -452,6 +465,9 @@ void editFile(const std::filesystem::path& path) {
 							editing_data.erase(editing_data.end() - total_subtracts);
 						}
 					}
+				}
+				else if(ch == '~'){
+					break;
 				}
 				else{
 					if (isalnum(ch) || ispunct(ch) || isspace(ch)){
@@ -463,9 +479,16 @@ void editFile(const std::filesystem::path& path) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
 						value = editing_data;
+						
 					}
+					else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+						
+						
+							
+					}					
 				}, dict[editing_field].fields[editing_name]);
 			}
+			
 
 		}
 
@@ -473,8 +496,8 @@ void editFile(const std::filesystem::path& path) {
 	}
 
 	clear();
-	printw("%d\n", curr_index);
-	printw("%ld\n", offset);
+	printw("%d\n", total_subtracts);
+	printw("%ld\n", editing_data.length());
 	printw("%d\n", num_of_elems);
 	printw("%s\n", editing_name.c_str());
 	printw("%d\n", editing_field);
