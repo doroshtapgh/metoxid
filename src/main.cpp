@@ -377,8 +377,9 @@ void editFile(const std::filesystem::path& path) {
 				break; //REMEMBER TO REMOVE THIS LINE
 			}
 			else{
-				if (ch == 127){
-
+				
+				if (ch == char(KEY_BACKSPACE)){
+					
 					if (editing_data.length() != 0 && total_subtracts != editing_data.length()){
 						if (total_subtracts == 0){
 							editing_data.erase(editing_data.end() - 1);
@@ -399,6 +400,10 @@ void editFile(const std::filesystem::path& path) {
 					if constexpr (std::is_same_v<T, std::string>) {
 						value = editing_data;
 					}
+					else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+						//const_cast<Exiv2::Value&>(value.get()) = Exiv2::Value::create(Exiv2::asciiString).get();
+						const_cast<Exiv2::Value&>(value.get()).read(editing_data);
+					}
 				}, dict[editing_field].fields[editing_name]);
 			}
 
@@ -413,6 +418,7 @@ void editFile(const std::filesystem::path& path) {
 	printw("%d\n", num_of_elems);
 	printw("%s\n", editing_name.c_str());
 	printw("%d\n", editing_field);
+	printw("%d\n", total_subtracts);
 	printw("Press any key to exit.");
 	printw("sadge :(");
 	
