@@ -480,7 +480,7 @@ void printEditingFields(const std::pair<const std::string, std::variant<std::str
 		}
 		else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
 			temp = value.get().toString().c_str();
-			printEditingValueAndCursor(value, total_subtracts, charstoleft, col);
+			printEditingValueAndCursor(temp, total_subtracts, charstoleft, col);
 
 			editing_data = temp;
 			size = temp.length();
