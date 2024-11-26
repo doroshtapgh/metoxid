@@ -22,7 +22,10 @@
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
-void printEditingValueAndCursor(std::string value, int total_subtracts);
+void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col);
+void printFieldName(std::string fieldname, int& charstoleft);
+void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col);
+void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft);
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler);
@@ -140,27 +143,18 @@ void editFile(const std::filesystem::path& path) {
 	std::string editing_name = "";
 	std::string temp = "";
 	int editing_field = 0;
-
-	std::vector<int> drop_indices;
-	
-	//for(size_t i = 0; i < dict.size(); i++){
-	//	printw("%s\n", dict[i].name.c_str());
-		
-	//}
-	
+	int charstoleft = 0;
+	int total_subtracts = 0;
+	int size = 0;
+	std::string editing_data = "";
+	int non_catagory_offest = 0;
+	int curr_index = 0;
+	std::vector<int> drop_indices;	
 	
 	for (size_t i = 0; i < num_of_elems; ++i) {
 		drop_indices.push_back(i);
 	}
-
-	int total_subtracts = 0;
-	int size = 0;
-	std::string editing_data = "";
-
 	
-	int non_catagory_offest = 0;
-	int curr_index = 0;
-
 	while (true) {
 		size_t actual_values = 0;
 		getmaxyx(stdscr, row, col);
@@ -168,7 +162,7 @@ void editFile(const std::filesystem::path& path) {
 			for (size_t i = 0; i < row; ++i) {
 				int top_down_increament = 0;
 			
-				if (i == 0){ //EDITING DOES NOT WORK FOR THESE VAKUES
+				if (i == 0){ 
 				
 					for (size_t j = 0; j < drop_indices.size(); ++j) {
 						if (drop_indices[j] == offset) {
@@ -180,6 +174,7 @@ void editFile(const std::filesystem::path& path) {
 								
 								if (top_down_increament == offset){
 									i += 1;
+									charstoleft = 0;
 									if (i > row){
 										break;
 									}					
@@ -188,53 +183,15 @@ void editFile(const std::filesystem::path& path) {
 										editing_name = field.first;
 										editing_field = j-1;
 									}
-									printw("  %s:", field.first.c_str());
+
+									printFieldName(field.first.c_str(), charstoleft);
 									attroff(COLOR_PAIR(2));
 									
 									if (editing_name == field.first && editing == true) {
-										attron(COLOR_PAIR(1));
-
-										std::visit([&](auto&& value) {
-											using T = std::decay_t<decltype(value)>;
-											if constexpr (std::is_same_v<T, std::string>) {
-												
-												printEditingValueAndCursor(value,total_subtracts);
-
-													
-												
-												editing_data = value;
-												size = value.length();
-												
-											}
-											else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-												temp = value.get().toString().c_str();
-												printEditingValueAndCursor(value,total_subtracts);
-
-													
-												
-												editing_data = value;
-												size = value.length();
-											}
-									
-											
-										}, field.second);
-										attroff(COLOR_PAIR(1));
-										printw("\n");
+										printEditingFields(field, total_subtracts, size, editing_data, temp, charstoleft, i, row, col);
 									} 
 									else {
-										attron(COLOR_PAIR(1));
-										std::visit([&](auto&& value){
-											using T = std::decay_t<decltype(value)>;
-											if constexpr(std::is_same_v<T, std::string>){
-												printw(" %s\n", value.c_str());
-
-											}
-											else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-												printw(" %s\n", value.get().toString().c_str());
-												
-											}
-										}, field.second);
-										attroff(COLOR_PAIR(1));
+										printRegularly(i, row, col, field, charstoleft);
 									}
 								}else{
 									top_down_increament++;
@@ -264,24 +221,9 @@ void editFile(const std::filesystem::path& path) {
 								i += 1;
 								if (i < row){
 									
-									printw("  %s:", field.first.c_str());
-									attron(COLOR_PAIR(1));
-									
-									std::visit([&](auto&& value){
-										using T = std::decay_t<decltype(value)>;
-										if constexpr(std::is_same_v<T, std::string>){
-											printw(" %s\n", value.c_str());
-
-										}
-										else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-											printw(" %s\n", value.get().toString().c_str());
-											
-										}
-									}, field.second);
-									
-									
-
-									attroff(COLOR_PAIR(1));
+									charstoleft = 0;
+									printFieldName(field.first.c_str(), charstoleft);
+									printRegularly(i, row, col, field, charstoleft);
 								}
 							}
 						}
@@ -291,6 +233,7 @@ void editFile(const std::filesystem::path& path) {
 							
 							for (auto& field : dict[curr_index].fields) {
 								i += 1;
+								charstoleft = 0;
 
 								if (i < row){
 									
@@ -299,42 +242,15 @@ void editFile(const std::filesystem::path& path) {
 										editing_name = field.first;
 										editing_field = curr_index;
 									}
-									printw("  %s:", field.first.c_str());
+
+									printFieldName(field.first.c_str(), charstoleft);
 									attroff(COLOR_PAIR(2));
 									
 									if (editing_name == field.first && editing == true) {
-										attron(COLOR_PAIR(1));
-
-										std::visit([&](auto&& value) {
-											using T = std::decay_t<decltype(value)>;
-											if constexpr (std::is_same_v<T, std::string>) {
-												
-												printEditingValueAndCursor(value,total_subtracts);
-												
-												editing_data = value;
-												size = value.length();
-												
-												
-											}
-											else if constexpr (std::is_same_v)
-										}, field.second);
-										attroff(COLOR_PAIR(1));
-										printw("\n");
+										printEditingFields(field, total_subtracts, size, editing_data, temp, charstoleft, i, row, col);
 									} 
 									else {
-										attron(COLOR_PAIR(1));
-										std::visit([&](auto&& value){
-											using T = std::decay_t<decltype(value)>;
-											if constexpr(std::is_same_v<T, std::string>){
-												printw(" %s\n", value.c_str());
-
-											}
-											else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-												printw(" %s\n", value.get().toString().c_str());
-												
-											}
-										}, field.second);
-										attroff(COLOR_PAIR(1));
+										printRegularly(i, row, col, field, charstoleft);
 									}
 								}
 							}
@@ -441,6 +357,25 @@ void editFile(const std::filesystem::path& path) {
 					total_subtracts--;
 				}
 			}
+			else if (ch == char(KEY_UP)){
+				if (total_subtracts + col > size){
+					total_subtracts = size;
+				}
+				else{
+					total_subtracts += col;
+				}
+			}
+			else if (ch == char(KEY_DOWN)){
+				if (total_subtracts - col < 0){
+					total_subtracts = 0;
+				}
+				else{
+					total_subtracts -= col;
+				}
+			}
+			else if (ch == '~') {
+				break; //REMEMBER TO REMOVE THIS LINE
+			}
 			else{
 				if (ch == 127){
 
@@ -487,12 +422,86 @@ void editFile(const std::filesystem::path& path) {
 	
 }
 
-void printEditingValueAndCursor(std::string value, int total_subtracts) {
+void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
+	
+	if (i < row){
+		attron(COLOR_PAIR(1));
+		std::visit([&](auto&& value){
+			using T = std::decay_t<decltype(value)>;
+			if constexpr(std::is_same_v<T, std::string>){
+				printw(" ");
+				charstoleft++;
+				for(int i = 0; i < value.length(); i++){
+					char c = value[i];
+					charstoleft++;
+					if (charstoleft <= col){
+						printw("%c", c);
+					}else{
+						break;
+					}
+				}
+			}
+			else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+				printw(" ");
+				charstoleft++;
+				for(int i = 0; i < value.length(); i++){
+					char c = value[i];
+					charstoleft++;
+					if (charstoleft <= col){
+						printw("%c", c);
+					}else{
+						break;
+					}
+				}
+			}
+		}, field.second);
+
+		if (charstoleft < col){
+			printw("\n");
+		}
+
+		attroff(COLOR_PAIR(1));
+
+	}
+}
+
+void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col){
+	attron(COLOR_PAIR(1));
+	
+	std::visit([&](auto&& value) {
+		using T = std::decay_t<decltype(value)>;
+		if constexpr (std::is_same_v<T, std::string>) {
+			
+			printEditingValueAndCursor(value, total_subtracts, charstoleft);
+
+			editing_data = value;
+			size = value.length();
+			
+		}
+		else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+			temp = value.get().toString().c_str();
+			printEditingValueAndCursor(value, total_subtracts, charstoleft, col);
+
+			editing_data = value;
+			size = value.length();
+		}
+
+	}, field.second);
+
+	attroff(COLOR_PAIR(1));
+	if ((charstoleft - (charstoleft/col)*col) < col){
+		printw("\n");
+	}
+
+	i += charstoleft/col; 
+}
+
+void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col){ {
 	printw(" ");
-												
+	charstoleft++;								
 	for(int i = 0; i < value.length(); i++){
 		char c = value[i];
-
+		
 		if (i == value.length() - total_subtracts){
 			attroff(COLOR_PAIR(1));
 			attron(COLOR_PAIR(2));
@@ -504,15 +513,20 @@ void printEditingValueAndCursor(std::string value, int total_subtracts) {
 		else{
 			printw("%c", c);
 		}
+		charstoleft++;
 		
 	}
-	if (total_subtracts == 0){
+	if (total_subtracts == 0 && (charstoleft - (charstoleft/col)*col) < col){
 		attroff(COLOR_PAIR(1));
 		attron(COLOR_PAIR(2));
 		printw(" ");
 		attroff(COLOR_PAIR(2));
 		attron(COLOR_PAIR(1));
-		
+		charstoleft++;
 	}
 }
 
+void printFieldName(std::string fieldname, int& charstoleft){
+	printw("  %s:", fieldname);
+	charstoleft += 3 + fieldname.length();
+}
