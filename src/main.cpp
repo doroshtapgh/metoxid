@@ -475,7 +475,7 @@ void printEditingFields(const std::pair<const std::string, std::variant<std::str
 		using T = std::decay_t<decltype(value)>;
 		if constexpr (std::is_same_v<T, std::string>) {
 			
-			printEditingValueAndCursor(value, total_subtracts, charstoleft);
+			printEditingValueAndCursor(value, total_subtracts, charstoleft, col);
 
 			editing_data = value;
 			size = value.length();
@@ -499,7 +499,7 @@ void printEditingFields(const std::pair<const std::string, std::variant<std::str
 	i += charstoleft/col; 
 }
 
-void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col){ {
+void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col){
 	printw(" ");
 	charstoleft++;								
 	for(int i = 0; i < value.length(); i++){
@@ -530,6 +530,6 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 }
 
 void printFieldName(std::string fieldname, int& charstoleft){
-	printw("  %s:", fieldname);
+	printw("  %s:", fieldname.c_str());
 	charstoleft += 3 + fieldname.length();
 }
