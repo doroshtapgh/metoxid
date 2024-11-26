@@ -444,8 +444,11 @@ void printRegularly(size_t i, int row, int col, const std::pair<const std::strin
 			else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
 				printw(" ");
 				charstoleft++;
-				for(int i = 0; i < value.length(); i++){
-					char c = value[i];
+
+				std::string temp = value.get().toString().c_str();
+
+				for(int i = 0; i < temp.length(); i++){
+					char c = temp[i];
 					charstoleft++;
 					if (charstoleft <= col){
 						printw("%c", c);
@@ -479,7 +482,7 @@ void printEditingFields(const std::pair<const std::string, std::variant<std::str
 			
 		}
 		else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-			temp = value.get().toString().c_str();
+			std::string temp = value.get().toString().c_str();
 			printEditingValueAndCursor(temp, total_subtracts, charstoleft, col);
 
 			editing_data = temp;
