@@ -482,8 +482,8 @@ void printEditingFields(const std::pair<const std::string, std::variant<std::str
 			temp = value.get().toString().c_str();
 			printEditingValueAndCursor(value, total_subtracts, charstoleft, col);
 
-			editing_data = value;
-			size = value.length();
+			editing_data = temp;
+			size = temp.length();
 		}
 
 	}, field.second);
