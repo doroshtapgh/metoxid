@@ -401,7 +401,6 @@ void editFile(const std::filesystem::path& path) {
 						value = editing_data;
 					}
 					else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-						//const_cast<Exiv2::Value&>(value.get()) = Exiv2::Value::create(Exiv2::asciiString).get();
 						const_cast<Exiv2::Value&>(value.get()).read(editing_data);
 					}
 				}, dict[editing_field].fields[editing_name]);
@@ -413,19 +412,9 @@ void editFile(const std::filesystem::path& path) {
 	}
 
 	clear();
-	printw("%d\n", curr_index);
-	printw("%ld\n", offset);
-	printw("%d\n", num_of_elems);
-	printw("%s\n", editing_name.c_str());
-	printw("%d\n", editing_field);
-	printw("%d\n", total_subtracts);
-	printw("Press any key to exit.");
-	printw("sadge :(");
-	
-	
-	refresh();
-	char hi = getch();
-	
+	metadata.Save(); //THIS IS THE CHANGE THAT IS SAIDDDDDDDDDDDDDDDDDDDD
+	browseDirectory(path.parent_path());
+
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
