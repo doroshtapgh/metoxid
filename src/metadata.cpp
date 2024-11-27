@@ -81,34 +81,6 @@ Metadata::Metadata(const std::filesystem::path& file) {
 }
 
 void Metadata::Save() {
-    for (const auto& category : this->metadata_){
-        if (category.name == "Comment"){
-            for (const auto& field : category.fields){
-                this->comment_[Exiv2::CommentKey(field.first)] = field.second;
-            }
-        }
-        else if (category.name == "Exif"){
-            for (const auto& field : category.fields){
-                this->exif_data_[Exiv2::ExifKey(field.first)] = field.second;
-            }
-        }
-        else if (category.name == "IPTC"){
-            for (const auto& field : category.fields){
-                this->iptc_data_[Exiv2::IptcKey(field.first)] = field.second;
-            }
-        }
-        else if (category.name == "XMP Data"){
-            for (const auto& field : category.fields){
-                this->xmp_data_[Exiv2::XmpKey(field.first)] = field.second;
-            }
-        }
-        else if (category.name == "XMP Packet"){
-            for (const auto& field : category.fields){
-                this->xmp_packet_[Exiv2::XmpKey(field.first)] = field.second;
-            }
-        }
-    }
-
     this->image_->setComment(this->comment_);
     this->image_->setXmpPacket(this->xmp_packet_);
     this->image_->setExifData(this->exif_data_);
