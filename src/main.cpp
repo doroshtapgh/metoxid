@@ -133,23 +133,23 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 
 void editFile(const std::filesystem::path& path) {
-	Metadata metadata(path);
-	auto dict = metadata.GetDict();
-	size_t num_of_elems = dict.size();
-	size_t selected_index = 0;
-	size_t offset = 0;
-	int row, col;
-	bool editing = false;
-	std::string editing_name = "";
-	std::string temp = "";
-	int editing_field = 0;
-	int charstoleft = 0;
-	int total_subtracts = 0;
-	int size = 0;
-	std::string editing_data = "";
-	int non_catagory_offest = 0;
-	int curr_index = 0;
-	std::vector<int> drop_indices;	
+	Metadata metadata(path); // Load the metadata of the file
+	auto dict = metadata.GetDict(); // Get the metadata dictionary
+	size_t num_of_elems = dict.size(); //Gets number of metadata categories
+	size_t selected_index = 0; //Index currently selected in terminal
+	size_t offset = 0; //Top offset, for priting purposes
+	int row, col; //Row and column of terminal
+	bool editing = false; //Is the user editing a field
+	std::string editing_name = ""; //Name of the field being edited
+	std::string temp = ""; //Temporary string, ignore
+	int editing_field = 0; //Index of the field being edited
+	int charstoleft = 0; //Number of characters to the left of the terminal (for printing purposes)
+	int total_subtracts = 0; //Number of characters user is from right of the string (for editing)
+	int size = 0; //Size of the string being edited (in chars)
+	std::string editing_data = ""; //Data being edited
+	int non_catagory_offest = 0; //Spaces taken up in terminal by non-category things (aka fields)
+	int curr_index = 0; //Index of the current field being printed
+	std::vector<int> drop_indices; //List of the indices of all catagories
 	
 	for (size_t i = 0; i < num_of_elems; ++i) {
 		drop_indices.push_back(i);
@@ -163,7 +163,6 @@ void editFile(const std::filesystem::path& path) {
 				int top_down_increament = 0;
 			
 				if (i == 0){ 
-				
 					for (size_t j = 0; j < drop_indices.size(); ++j) {
 						if (drop_indices[j] == offset) {
 							break;
@@ -374,7 +373,7 @@ void editFile(const std::filesystem::path& path) {
 				}
 			}
 			else if (ch == '~') {
-				break; //REMEMBER TO REMOVE THIS LINE
+				break;
 			}
 			else{
 				
