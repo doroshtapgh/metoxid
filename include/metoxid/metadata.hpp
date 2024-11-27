@@ -29,6 +29,8 @@ public:
     void SetDict(const std::vector<Category>& dict) {
         this->metadata_ = dict;
     }
+
+    void Save();
 private:
     std::unique_ptr<Exiv2::Image> image_;
     

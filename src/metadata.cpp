@@ -79,3 +79,12 @@ Metadata::Metadata(const std::filesystem::path& file) {
         this->metadata_.push_back(category);
     }
 }
+
+void Metadata::Save() {
+    this->image_->setComment(this->comment_);
+    this->image_->setXmpPacket(this->xmp_packet_);
+    this->image_->setExifData(this->exif_data_);
+    this->image_->setXmpData(this->xmp_data_);
+    this->image_->setIptcData(this->iptc_data_);
+    this->image_->writeMetadata();
+}
