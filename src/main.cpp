@@ -412,7 +412,7 @@ void editFile(const std::filesystem::path& path) {
 	}
 
 	clear();
-	metadata.Save(); //THIS IS THE CHANGE THAT IS SAIDDDDDDDDDDDDDDDDDDDD
+	metadata.Save(); // Save the edited metadata
 	browseDirectory(path.parent_path());
 
 }

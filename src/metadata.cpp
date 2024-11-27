@@ -79,3 +79,32 @@ Metadata::Metadata(const std::filesystem::path& file) {
         this->metadata_.push_back(category);
     }
 }
+
+void Metadata::Save() {
+    // Update the image metadata with the edited metadata
+    for (const auto& category : this->metadata_) {
+        if (category.name == "Comment") {
+            this->image_->setComment(category.fields.at("Comment").get<std::string>());
+        } else if (category.name == "Exif") {
+            for (const auto& field : category.fields) {
+                this->exif_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+            }
+        } else if (category.name == "IPTC") {
+            for (const auto& field : category.fields) {
+                this->iptc_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+            }
+        } else if (category.name == "XMP Data") {
+            for (const auto& field : category.fields) {
+                this->xmp_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+            }
+        } else if (category.name == "XMP Packet") {
+            this->xmp_packet_ = category.fields.at("XMP Packet").get<std::string>();
+        }
+    }
+
+    // Write the updated metadata back to the image file
+    this->image_->setExifData(this->exif_data_);
+    this->image_->setIptcData(this->iptc_data_);
+    this->image_->setXmpData(this->xmp_data_);
+    this->image_->writeMetadata();
+}
