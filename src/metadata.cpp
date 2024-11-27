@@ -84,21 +84,21 @@ void Metadata::Save() {
     // Update the image metadata with the edited metadata
     for (const auto& category : this->metadata_) {
         if (category.name == "Comment") {
-            this->image_->setComment(category.fields.at("Comment").get<std::string>());
+            this->image_->setComment(category.fields.at("Comment").asString());
         } else if (category.name == "Exif") {
             for (const auto& field : category.fields) {
-                this->exif_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+                this->exif_data_[field.first].setValue(field.second.toExiv2Value());
             }
         } else if (category.name == "IPTC") {
             for (const auto& field : category.fields) {
-                this->iptc_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+                this->iptc_data_[field.first].setValue(field.second.toExiv2Value());
             }
         } else if (category.name == "XMP Data") {
             for (const auto& field : category.fields) {
-                this->xmp_data_[field.first].setValue(field.second.get<std::reference_wrapper<const Exiv2::Value>>().get());
+                this->xmp_data_[field.first].setValue(field.second.toExiv2Value());
             }
         } else if (category.name == "XMP Packet") {
-            this->xmp_packet_ = category.fields.at("XMP Packet").get<std::string>();
+            this->xmp_packet_ = category.fields.at("XMP Packet").asString();
         }
     }
 
