@@ -27,6 +27,7 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 void printFieldName(std::string fieldname, int& charstoleft);
 void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col);
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft);
+void printFields(std::string value, int& charstoleft, int row, int col);
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler); // Register the signal handler
