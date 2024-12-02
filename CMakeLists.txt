@@ -23,6 +23,7 @@ else()
     message(FATAL_ERROR "Could not find the ncurses library")
 endif()
 
+
 # Use Exiv2 include and library paths
 target_include_directories(metoxid PRIVATE include ${Exiv2_INCLUDE_DIRS})
 target_link_libraries(metoxid PRIVATE exiv2)
