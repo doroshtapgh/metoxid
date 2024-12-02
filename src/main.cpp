@@ -135,29 +135,29 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 void editFile(const std::filesystem::path& path) {
 	Metadata metadata(path);
-	auto dict = metadata.GetDict();
-	size_t num_of_elems = dict.size();
-	size_t selected_index = 0;
-	size_t offset = 0;
-	int row, col;
-	bool editing = false;
-	std::string editing_name = "";
-	std::string temp = "";
-	int editing_field = 0;
-	int charstoleft = 0;
-	int total_subtracts = 0;
-	int size = 0;
-	std::string editing_data = "";
-	int non_catagory_offest = 0;
-	int curr_index = 0;
-	std::vector<int> drop_indices;	
+	auto dict = metadata.GetDict(); //an array that holds the categories
+	size_t num_of_elems = dict.size(); // size of the array
+	size_t selected_index = 0; //index of the dictionary that is being hovered on by the cursor
+	size_t offset = 0; //determines how many character rows down the screen has moved
+	int row, col; //row = number of characters that fit in a vertical line on the curent screen size | col = number of characters that fit horizontally
+	bool editing = false; // false if no field is being edited, allows cursor to move up and down, true if a field is being edited, only allows left and right cursor movement
+	std::string editing_name = ""; //name of the field that is being edited
+	std::string temp = ""; 
+	int editing_field = 0; //index of the field that is being edited
+	int charstoleft = 0; //like offset, but horizontally
+	int total_subtracts = 0; //how many characters from the end the cursor is at when editing a field
+	int field_size = 0; //length of the field being edited
+	std::string editing_data = ""; //holds the value of the field that is being edited once it is turned into a string
+	int non_catagory_offest = 0; //like offset, but disregards categories
+	int category_index = 0; //index of the category the cursor is within
+	std::vector<int> drop_indices; //array that holds the indices of the category dropdown positions
 	
 	for (size_t i = 0; i < num_of_elems; ++i) {
 		drop_indices.push_back(i);
 	}
 	
 	while (true) {
-		size_t actual_values = 0;
+		size_t category_index = 0;
 		getmaxyx(stdscr, row, col);
 		
 			for (size_t i = 0; i < row; ++i) {
@@ -189,7 +189,7 @@ void editFile(const std::filesystem::path& path) {
 									attroff(COLOR_PAIR(2));
 									
 									if (editing_name == field.first && editing == true) {
-										printEditingFields(field, total_subtracts, size, editing_data, temp, charstoleft, i, row, col);
+										printEditingFields(field, total_subtracts, field_size, editing_data, temp, charstoleft, i, row, col);
 									} 
 									else {
 										printRegularly(i, row, col, field, charstoleft);
@@ -205,20 +205,20 @@ void editFile(const std::filesystem::path& path) {
 
 				if (i + offset < num_of_elems && i < row) {
 
-					curr_index = actual_values + offset - non_catagory_offest;
+					category_index = offset - non_catagory_offest;
 
 					if (i + offset == selected_index) {
 						attron(COLOR_PAIR(2));
-						if (dict[curr_index].expanded) {
-							printw("v %s\n", dict[curr_index].name.c_str());
+						if (dict[category_index].expanded) {
+							printw("v %s\n", dict[category_index].name.c_str());
 						} else {
-							printw("> %s\n", dict[curr_index].name.c_str());
+							printw("> %s\n", dict[category_index].name.c_str());
 						}
 						attroff(COLOR_PAIR(2));
 
-						if (dict[curr_index].expanded) {
+						if (dict[category_index].expanded) {
 								
-							for (auto& field : dict[curr_index].fields) {
+							for (auto& field : dict[category_index].fields) {
 								i += 1;
 								if (i < row){
 									
@@ -229,10 +229,10 @@ void editFile(const std::filesystem::path& path) {
 							}
 						}
 					} else {
-						if (dict[curr_index].expanded) {
-							printw("v %s\n", dict[curr_index].name.c_str());
+						if (dict[category_index].expanded) {
+							printw("v %s\n", dict[category_index].name.c_str());
 							
-							for (auto& field : dict[curr_index].fields) {
+							for (auto& field : dict[category_index].fields) {
 								i += 1;
 								charstoleft = 0;
 
@@ -241,14 +241,14 @@ void editFile(const std::filesystem::path& path) {
 									if (i + offset == selected_index) {
 										attron(COLOR_PAIR(2));
 										editing_name = field.first;
-										editing_field = curr_index;
+										editing_field = category_index;
 									}
 
 									printFieldName(field.first.c_str(), charstoleft);
 									attroff(COLOR_PAIR(2));
 									
 									if (editing_name == field.first && editing == true) {
-										printEditingFields(field, total_subtracts, size, editing_data, temp, charstoleft, i, row, col);
+										printEditingFields(field, total_subtracts, field_size, editing_data, temp, charstoleft, i, row, col);
 									} 
 									else {
 										printRegularly(i, row, col, field, charstoleft);
@@ -257,10 +257,10 @@ void editFile(const std::filesystem::path& path) {
 							}
 							
 						} else {
-							printw("> %s\n", dict[curr_index].name.c_str());
+							printw("> %s\n", dict[category_index].name.c_str());
 						}
 					}
-					actual_values ++;
+					category_index ++;
 				}
 			}
 		
@@ -349,7 +349,7 @@ void editFile(const std::filesystem::path& path) {
 				curs_set(0);
 			} 
 			else if (ch == char(KEY_LEFT)) {
-				if (total_subtracts < size){
+				if (total_subtracts < field_size){
 					total_subtracts++;
 				}
 			}
@@ -359,8 +359,8 @@ void editFile(const std::filesystem::path& path) {
 				}
 			}
 			else if (ch == char(KEY_UP)){
-				if (total_subtracts + col > size){
-					total_subtracts = size;
+				if (total_subtracts + col > field_size){
+					total_subtracts = field_size;
 				}
 				else{
 					total_subtracts += col;
