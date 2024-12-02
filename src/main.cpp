@@ -144,7 +144,7 @@ void editFile(const std::filesystem::path& path) {
 	int editing_field = 0; //Index of the field being edited
 	int charstoleft = 0; //Number of characters to the left of the terminal (for printing purposes)
 	int total_subtracts = 0; //Number of characters user is from right of the string (for editing)
-	int size = 0; //Size of the string being edited (in chars)
+	int field_size = 0; //Size of the string being edited (in chars)
 	std::string editing_data = ""; //Data being edited
 	int non_catagory_offest = 0; //Spaces taken up in terminal by non-category things (aka fields)
 	int curr_index = 0; //Index of the current field being printed
