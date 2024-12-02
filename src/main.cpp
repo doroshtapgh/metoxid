@@ -137,7 +137,7 @@ void editFile(const std::filesystem::path& path) {
 	auto dict = metadata.GetDict(); // Get the metadata dictionary
 	size_t num_of_elems = dict.size(); //Gets number of metadata categories
 	size_t selected_index = 0; //Index currently selected in terminal
-	size_t offset = 0; //Top offset, for priting purposes
+	size_t offset = 0; //Top offset, for printing purposes
 	int row, col; //Row and column of terminal
 	bool editing = false; //Is the user editing a field
 	std::string editing_name = ""; //Name of the field being edited
