@@ -148,7 +148,7 @@ void editFile(const std::filesystem::path& path) {
 	int field_size = 0; //Size of the string being edited (in chars)
 	std::string editing_data = ""; //Data being edited
 	int non_catagory_offest = 0; //Spaces taken up in terminal by non-category things (aka fields)
-	int curr_index = 0; //Index of the current field being printed
+	int category_index = 0; //Index of the current field being printed
 	std::vector<int> drop_indices; //List of the indices of all catagories
 	
 	for (size_t i = 0; i < num_of_elems; ++i) {
@@ -156,7 +156,7 @@ void editFile(const std::filesystem::path& path) {
 	}
 	
 	while (true) {
-		size_t category_index = 0;
+		size_t printed_catagories = 0;
 		getmaxyx(stdscr, row, col);
 		
 			for (size_t i = 0; i < row; ++i) {
@@ -203,7 +203,7 @@ void editFile(const std::filesystem::path& path) {
 
 				if (i + offset < num_of_elems && i < row) {
 
-					category_index = offset - non_catagory_offest;
+					category_index = printed_catagories + offset - non_catagory_offest;
 
 					if (i + offset == selected_index) {
 						attron(COLOR_PAIR(2));
@@ -258,7 +258,7 @@ void editFile(const std::filesystem::path& path) {
 							printw("> %s\n", dict[category_index].name.c_str());
 						}
 					}
-					category_index ++;
+					printed_catagories ++;
 				}
 			}
 		
