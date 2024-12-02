@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <vector>
 #include <iostream>
+#include <optional>
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
@@ -73,7 +74,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 	auto contents = listDirectory(dir);
 	size_t num_of_elems = contents.size();
 	size_t selected_index = 0;
-	size_t offset = 0;
+	size_t offset = 0; 
 	int row, col;
 
 	while (true) {
@@ -93,7 +94,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 		refresh();
 		
-		char ch = getch();
+		char ch = getch(); //waits for user input and store it
 
 		if (ch == (char)KEY_UP) {
 			if (selected_index > 0) {
@@ -388,6 +389,9 @@ void editFile(const std::filesystem::path& path) {
 						}
 					}
 				}
+				else if(ch == '~'){
+					break;
+				}
 				else{
 					if (isalnum(ch) || ispunct(ch) || isspace(ch)){
 						editing_data.insert(editing_data.end() - total_subtracts, ch);
@@ -404,6 +408,7 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}, dict[editing_field].fields[editing_name]);
 			}
+			
 
 		}
 
