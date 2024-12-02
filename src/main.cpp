@@ -74,7 +74,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 	auto contents = listDirectory(dir);
 	size_t num_of_elems = contents.size();
 	size_t selected_index = 0;
-	size_t offset = 0;
+	size_t offset = 0; 
 	int row, col;
 
 	while (true) {
@@ -94,7 +94,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 		refresh();
 		
-		char ch = getch();
+		char ch = getch(); //waits for user input and store it
 
 		if (ch == (char)KEY_UP) {
 			if (selected_index > 0) {
