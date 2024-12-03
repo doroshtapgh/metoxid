@@ -43,17 +43,17 @@ int main(int argc, char* argv[]) {
 		init_pair(2, COLOR_BLACK, COLOR_WHITE);
 	}
 	
-	if (argc == 1) { //nothing specified
+	if (argc == 1) {
 		browseDirectory(std::filesystem::current_path());
-	} else if (argc == 2) { //one argument specified
+	} else if (argc == 2) {
 		std::filesystem::path path = std::filesystem::absolute(argv[1]);
 
-		if (std::filesystem::exists(path)) { //check if the path exists and then do stuff with it
+		if (std::filesystem::exists(path)) {
 			if (std::filesystem::is_regular_file(path)) {
 				editFile(path);
                 fatalError("%s Will Edit Now", argv[1]);
 			} else if (std::filesystem::is_directory(path)) {
-				browseDirectory(path); 
+				browseDirectory(path);
 			} else {
 				fatalError("%s is not a file or a directory.", argv[1]);
 			}
@@ -77,11 +77,11 @@ void browseDirectory(const std::filesystem::path& dir) {
 	int row, col;
 
 	while (true) {
-		getmaxyx(stdscr, row, col); 
+		getmaxyx(stdscr, row, col);
 
 		for (size_t i = 0; i < row; ++i) {
 			if (i + offset < num_of_elems) {
-				if (i + offset == selected_index) { //makes the one you are on look cooler
+				if (i + offset == selected_index) {  //makes the one you are on look cooler
 					attron(COLOR_PAIR(2));
 					printw("%s\n", contents[i + offset].filename().c_str());
 					attroff(COLOR_PAIR(2));
@@ -91,7 +91,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 			}
 		}
 
-		refresh(); //refreshes the screen
+		refresh();
 		
 		char ch = getch(); //waits for user input and store it
 
@@ -99,7 +99,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 			if (selected_index > 0) {
 				selected_index--;
 
-				if (selected_index < offset) { //scrolls up if you are at the top
+				if (selected_index < offset) { //scrolls up if you are to top
 					offset--;
 				}
 			}
@@ -107,7 +107,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 			if (selected_index + 1 < num_of_elems) {
 				selected_index++;
 
-				if (selected_index > offset + row - 1) { //scrolls down if you are at bottom
+				if (selected_index > offset + row - 1) { //scrolls down if you are to bottom
 					offset++;
 				}
 			}
@@ -126,6 +126,11 @@ void browseDirectory(const std::filesystem::path& dir) {
 				exit(0);
 			}
 		}
+		else if (ch == '~'){
+			curs_set(1);
+			endwin();
+			exit(0);
+		}
 		
 		clear();
 	}
@@ -133,43 +138,43 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 
 void editFile(const std::filesystem::path& path) {
-	Metadata metadata(path); // Load the metadata of the file
-	auto dict = metadata.GetDict(); // Get the metadata dictionary
-	size_t num_of_elems = dict.size(); //Gets number of metadata categories
-	size_t selected_index = 0; //Index currently selected in terminal
-	size_t offset = 0; //Top offset, for printing purposes
-	int row, col; //Row and column of terminal
-	bool editing = false; //Is the user editing a field
-	std::string editing_name = ""; //Name of the field being edited
-	std::string temp = ""; //Temporary string, ignore
-	int editing_field = 0; //Index of the field being edited
-	int charstoleft = 0; //Number of characters to the left of the terminal (for printing purposes)
-	int total_subtracts = 0; //Number of characters user is from right of the string (for editing)
-	int field_size = 0; //Size of the string being edited (in chars)
-	std::string editing_data = ""; //Data being edited
-	int non_catagory_offest = 0; //Spaces taken up in terminal by non-category things (aka fields)
-	int category_index = 0; //Index of the current field being printed
-	std::vector<int> drop_indices; //List of the indices of all catagories
+	Metadata metadata(path);
+	auto dict = metadata.GetDict(); //an array that holds the categories
+	size_t num_of_elems = dict.size(); // size of the array
+	size_t selected_index = 0; //index of the dictionary that is being hovered on by the cursor
+	size_t offset = 0; //determines how many character rows down the screen has moved
+	int row, col; //row = number of characters that fit in a vertical line on the curent screen size | col = number of characters that fit horizontally
+	bool editing = false; // false if no field is being edited, allows cursor to move up and down, true if a field is being edited, only allows left and right cursor movement
+	std::string editing_name = ""; //name of the field that is being edited
+	std::string temp = ""; 
+	int editing_field = 0; //index of the field that is being edited
+	int charstoleft = 0; //like offset, but horizontally
+	int total_subtracts = 0; //how many characters from the end the cursor is at when editing a field
+	int field_size = 0; //length of the field being edited
+	std::string editing_data = ""; //holds the value of the field that is being edited once it is turned into a string
+	int non_category_offset = 0; //like offset, but disregards categories
+	int category_index = 0; //index of the category the cursor is within
+	std::vector<int> drop_indices; //array that holds the indices of the category dropdown positions
 	
 	for (size_t i = 0; i < num_of_elems; ++i) {
 		drop_indices.push_back(i);
 	}
 	
 	while (true) {
-		size_t printed_catagories = 0;
-		getmaxyx(stdscr, row, col);
+		size_t printed_categories = 0; //counter of categories that have been printed
+		getmaxyx(stdscr, row, col); //gets the row and col for the current screen
 		
 			for (size_t i = 0; i < row; ++i) {
-				int top_down_increament = 0;
+				int top_down_increament = 0; //ensures that fields are being printed even if their category is off screen
 			
-				if (i == 0){ 
+				if (i == 0){  //only for the first row
 					for (size_t j = 0; j < drop_indices.size(); ++j) {
-						if (drop_indices[j] == offset) {
+						if (drop_indices[j] == offset) { //if user has not scrolled at all
 							break;
 						} 
-						if (drop_indices[j] > offset) {
+						if (drop_indices[j] > offset) { //checks if a field is opened after the user scrolls past the category name
 							top_down_increament = drop_indices[j-1]+1;
-							for (auto& field : dict[j-1].fields) {
+							for (auto& field : dict[j-1].fields) { //loops through every field in the selected category
 								
 								if (top_down_increament == offset){
 									i += 1;
@@ -177,7 +182,8 @@ void editFile(const std::filesystem::path& path) {
 									if (i > row){
 										break;
 									}					
-									if (i + offset == selected_index+1) {
+									if (i + offset == selected_index+1) { 
+										//prints out and highlights the selected field
 										attron(COLOR_PAIR(2));
 										editing_name = field.first;
 										editing_field = j-1;
@@ -186,10 +192,10 @@ void editFile(const std::filesystem::path& path) {
 									printFieldName(field.first.c_str(), charstoleft);
 									attroff(COLOR_PAIR(2));
 									
-									if (editing_name == field.first && editing == true) {
+									if (editing_name == field.first && editing == true) { 
 										printEditingFields(field, total_subtracts, field_size, editing_data, temp, charstoleft, i, row, col);
 									} 
-									else {
+									else { 
 										printRegularly(i, row, col, field, charstoleft);
 									}
 								}else{
@@ -201,11 +207,12 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 
-				if (i + offset < num_of_elems && i < row) {
+				if (i + offset < num_of_elems && i < row) { //Prints out everything else
 
-					category_index = printed_catagories + offset - non_catagory_offest;
+					category_index = printed_categories + offset - non_category_offset;
 
 					if (i + offset == selected_index) {
+						//prints out and highlights the selected category
 						attron(COLOR_PAIR(2));
 						if (dict[category_index].expanded) {
 							printw("v %s\n", dict[category_index].name.c_str());
@@ -215,8 +222,8 @@ void editFile(const std::filesystem::path& path) {
 						attroff(COLOR_PAIR(2));
 
 						if (dict[category_index].expanded) {
-								
-							for (auto& field : dict[category_index].fields) {
+							for (auto& field : dict[category_index].fields) { 
+								//loops through the fields of an expanded category and prints the fields
 								i += 1;
 								if (i < row){
 									
@@ -227,16 +234,19 @@ void editFile(const std::filesystem::path& path) {
 							}
 						}
 					} else {
-						if (dict[category_index].expanded) {
+						//for not selected categories
+						if (dict[category_index].expanded) { //prints category name
 							printw("v %s\n", dict[category_index].name.c_str());
 							
 							for (auto& field : dict[category_index].fields) {
+								//loops through the fields of the category
 								i += 1;
 								charstoleft = 0;
 
 								if (i < row){
 									
 									if (i + offset == selected_index) {
+										//if the field is selected, print and highlight it
 										attron(COLOR_PAIR(2));
 										editing_name = field.first;
 										editing_field = category_index;
@@ -258,7 +268,7 @@ void editFile(const std::filesystem::path& path) {
 							printw("> %s\n", dict[category_index].name.c_str());
 						}
 					}
-					printed_catagories ++;
+					printed_categories ++;
 				}
 			}
 		
@@ -271,48 +281,57 @@ void editFile(const std::filesystem::path& path) {
 			if (ch == (char)KEY_UP) {
 				
 				if (selected_index > 0) {
+					//if the cursor is still within the bounds of the screen
 					selected_index--;
 					
 					if (selected_index < offset) {
+						//if the cursor is outside the bounds of the screen and requires the screen to move up
 						offset--;
 
 						bool found = false;
 						for (size_t j = 0; j < drop_indices.size(); ++j) {
+							//checks if the row that was moved to was a category. If yes, reduces non category offset.
 							if (drop_indices[j] == offset) {
 								found = true;
 								break;
 							} 
 						}
 						if (!found) {
-							non_catagory_offest -= 1;
+							non_category_offset -= 1;
 						}
 					}
 				}
 			} else if (ch == (char)KEY_DOWN) {
 				if (selected_index + 1 < num_of_elems) {
+					//if the cursor is still within the bounds of the screen
 					selected_index++;
 
 					if (selected_index > offset + row - 1) {
+						//if the cursor is outside the bounds of the screen and requires the screen to move up
 						offset++;
 
 						for (size_t j = 0; j < drop_indices.size(); ++j) {
+							//checks if the row that was moved to was a category. If yes, reduces non category offset.
 							if (drop_indices[j] == offset-1) {
 								break;
 							} 
 							if (drop_indices[j] > offset) {
-								non_catagory_offest += 1;
+								non_category_offset += 1;
 								break;
 							}
 						}
 					}
 				}
 			} else if (ch == 10) {
+				//if the key pressed was enter
 				total_subtracts = 0;
 				editing = true;
 			
 				for (int i = 0; i < drop_indices.size(); ++i) {
 					if (drop_indices[i] == selected_index) {
+						//if the selected item is a category
 						if (dict[i].expanded) {
+							//collapses if it is expanded
 							dict[i].expanded = false;
 							int sizeof_fields = dict[i].fields.size();
 							num_of_elems = num_of_elems - sizeof_fields;
@@ -322,6 +341,7 @@ void editFile(const std::filesystem::path& path) {
 							editing = false;
 							break;
 						} else {
+							//expands the category if it's collapsed
 							dict[i].expanded = true;
 							int sizeof_fields = dict[i].fields.size();
 							num_of_elems = num_of_elems + sizeof_fields;
@@ -334,30 +354,33 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 			} else if (ch == '~') {
-				break; //REMEMBER TO REMOVE THIS LINE
+				break; //exits and saves
 			}
 			
 		}
-		else{
+		else{ //if mode is currently editing
 			refresh();
 
-			if (ch == 10) {
+			if (ch == 10) { //if the key is enter
 				total_subtracts = 0;
 				editing = false;
 				curs_set(0);
 			} 
-			else if (ch == char(KEY_LEFT)) {
+			else if (ch == char(KEY_LEFT)) { //if the key is key_left
 				if (total_subtracts < field_size){
+					//changes the position of the cursor
 					total_subtracts++;
 				}
 			}
 			else if (ch == char(KEY_RIGHT)) {
 				if (total_subtracts > 0){
+					//changes the position of the cursor
 					total_subtracts--;
 				}
 			}
 			else if (ch == char(KEY_UP)){
 				if (total_subtracts + col > field_size){
+					//if the field is multiple lines, moves one line up. If not, moves to the start of the field 
 					total_subtracts = field_size;
 				}
 				else{
@@ -366,6 +389,7 @@ void editFile(const std::filesystem::path& path) {
 			}
 			else if (ch == char(KEY_DOWN)){
 				if (total_subtracts - col < 0){
+					//if the field is multiple lines, moves one line down. If not, moves to the end of the field 
 					total_subtracts = 0;
 				}
 				else{
@@ -373,12 +397,12 @@ void editFile(const std::filesystem::path& path) {
 				}
 			}
 			else if (ch == '~') {
-				break;
+				break; //REMEMBER TO REMOVE THIS LINE
 			}
 			else{
 				
 				if (ch == char(KEY_BACKSPACE)){
-					
+					//deletes one character 
 					if (editing_data.length() != 0 && total_subtracts != editing_data.length()){
 						if (total_subtracts == 0){
 							editing_data.erase(editing_data.end() - 1);
@@ -389,14 +413,16 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 				else if(ch == '~'){
-					break;
+					break; //exits and saves
 				}
 				else{
 					if (isalnum(ch) || ispunct(ch) || isspace(ch)){
+						//if the character is a number, punctuation or space, type it where the cursor is
 						editing_data.insert(editing_data.end() - total_subtracts, ch);
 					}
 				}
 				
+				//saves the edits into editing data
 				std::visit([&](auto&& value) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
@@ -416,7 +442,7 @@ void editFile(const std::filesystem::path& path) {
 
 	clear();
 	metadata.Save(); // Save the edited metadata
-	browseDirectory(path.parent_path());
+	browseDirectory(path.parent_path()); //goes back to image select
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
