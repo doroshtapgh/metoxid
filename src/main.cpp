@@ -127,6 +127,11 @@ void browseDirectory(const std::filesystem::path& dir) {
 				exit(0);
 			}
 		}
+		else if (ch == '~'){
+			curs_set(1);
+			endwin();
+			exit(0);
+		}
 		
 		clear();
 	}
