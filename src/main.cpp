@@ -359,6 +359,10 @@ void editFile(const std::filesystem::path& path) {
 			} else if (ch == '~') {
 				break; //exits and saves
 			}
+			else if (ch == char(KEY_BACKSPACE)){
+				dict[editing_field].fields.erase(editing_name);
+				
+			}
 			
 		}
 		else{ //if mode is currently editing
