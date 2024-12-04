@@ -565,3 +565,4 @@ void printFieldName(std::string fieldname, int& charstoleft){
 	printw("  %s:", fieldname.c_str());
 	charstoleft += 3 + fieldname.length();
 }
+
