@@ -27,9 +27,10 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 void printFieldName(std::string fieldname, int& charstoleft);
 void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col);
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft);
+void printFields(std::string value, int& charstoleft, int row, int col);
 
 int main(int argc, char* argv[]) {
-	signal(SIGINT, sigintHandler);
+	signal(SIGINT, sigintHandler); // Register the signal handler
 
     initscr();
 	
@@ -65,16 +66,14 @@ int main(int argc, char* argv[]) {
 
 	endwin();
 	
-
-
     return 0;
 }
 
 void browseDirectory(const std::filesystem::path& dir) {
-	auto contents = listDirectory(dir);
-	size_t num_of_elems = contents.size();
-	size_t selected_index = 0;
-	size_t offset = 0; 
+	auto contents = listDirectory(dir); //Get the contents of the directory
+	size_t num_of_elems = contents.size(); //Number of elements in the directory
+	size_t selected_index = 0; //Index of the selected file
+	size_t offset = 0; //offset from top of the screen
 	int row, col;
 
 	while (true) {
@@ -82,7 +81,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 
 		for (size_t i = 0; i < row; ++i) {
 			if (i + offset < num_of_elems) {
-				if (i + offset == selected_index) {
+				if (i + offset == selected_index) {  //makes the one you are on look cooler
 					attron(COLOR_PAIR(2));
 					printw("%s\n", contents[i + offset].filename().c_str());
 					attroff(COLOR_PAIR(2));
@@ -100,7 +99,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 			if (selected_index > 0) {
 				selected_index--;
 
-				if (selected_index < offset) {
+				if (selected_index < offset) { //scrolls up if you are to top
 					offset--;
 				}
 			}
@@ -108,7 +107,7 @@ void browseDirectory(const std::filesystem::path& dir) {
 			if (selected_index + 1 < num_of_elems) {
 				selected_index++;
 
-				if (selected_index > offset + row - 1) {
+				if (selected_index > offset + row - 1) { //scrolls down if you are to bottom
 					offset++;
 				}
 			}
@@ -169,7 +168,6 @@ void editFile(const std::filesystem::path& path) {
 				int top_down_increament = 0; //ensures that fields are being printed even if their category is off screen
 			
 				if (i == 0){  //only for the first row
-
 					for (size_t j = 0; j < drop_indices.size(); ++j) {
 						if (drop_indices[j] == offset) { //if user has not scrolled at all
 							break;
@@ -209,7 +207,7 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 
-				if (i + offset < num_of_elems && i < row) { //
+				if (i + offset < num_of_elems && i < row) { //Prints out everything else
 
 					category_index = printed_categories + offset - non_category_offset;
 
@@ -224,7 +222,6 @@ void editFile(const std::filesystem::path& path) {
 						attroff(COLOR_PAIR(2));
 
 						if (dict[category_index].expanded) {
-								
 							for (auto& field : dict[category_index].fields) { 
 								//loops through the fields of an expanded category and prints the fields
 								i += 1;
@@ -420,8 +417,7 @@ void editFile(const std::filesystem::path& path) {
 					}
 				}
 				else if(ch == '~'){
-					//exits and saves
-					break;
+					break; //exits and saves
 				}
 				else{
 					if (isalnum(ch) || ispunct(ch) || isspace(ch)){
@@ -451,97 +447,84 @@ void editFile(const std::filesystem::path& path) {
 	clear();
 	metadata.Save(); // Save the edited metadata
 	browseDirectory(path.parent_path()); //goes back to image select
-
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
 	
-	if (i < row){
+	if (i < row){ //makes sure there is space
 		attron(COLOR_PAIR(1));
-		std::visit([&](auto&& value){
-			using T = std::decay_t<decltype(value)>;
-			if constexpr(std::is_same_v<T, std::string>){
-				printw(" ");
-				charstoleft++;
-				for(int i = 0; i < value.length(); i++){
-					char c = value[i];
-					charstoleft++;
-					if (charstoleft <= col){
-						printw("%c", c);
-					}else{
-						break;
-					}
-				}
+
+		std::visit([&](auto&& value){ //allows us to access field.second, use "&" to access the address of it and actually change values easilly
+			using T = std::decay_t<decltype(value)>; //gets the datatype of value
+			if constexpr(std::is_same_v<T, std::string>){ //if string
+				printFields(value, charstoleft, row, col);
 			}
-			else if  constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-				printw(" ");
-				charstoleft++;
-
-				std::string temp = value.get().toString().c_str();
-
-				for(int i = 0; i < temp.length(); i++){
-					char c = temp[i];
-					charstoleft++;
-					if (charstoleft <= col){
-						printw("%c", c);
-					}else{
-						break;
-					}
-				}
+			else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){ //if refrence wrapper
+				printFields(value.get().toString().c_str(), charstoleft, row, col); //sets the value to a string before printing
 			}
 		}, field.second);
 
-		if (charstoleft < col){
+		if (charstoleft < col){ //if needed print a new line
 			printw("\n");
 		}
-
 		attroff(COLOR_PAIR(1));
+	}
+}
 
+void printFields(std::string value, int& charstoleft, int row, int col){
+	printw(" ");
+	charstoleft++;
+
+	for(int i = 0; i < value.length(); i++){ //prints the value by character (in case it is too long)
+		char c = value[i];
+		charstoleft++;
+		if (charstoleft <= col){ //only print if there is space horizontally
+			printw("%c", c);
+		}else{
+			break;
+		}
 	}
 }
 
 void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col){
 	attron(COLOR_PAIR(1));
 	
-	std::visit([&](auto&& value) {
-		using T = std::decay_t<decltype(value)>;
-		if constexpr (std::is_same_v<T, std::string>) {
-			
+	std::visit([&](auto&& value) { //allows us to access field.second, use "&" to access the address of it and actually change values easilly
+		using T = std::decay_t<decltype(value)>; //gets the datatype of value
+		if constexpr(std::is_same_v<T, std::string>){
 			printEditingValueAndCursor(value, total_subtracts, charstoleft, col);
 
 			editing_data = value;
 			size = value.length();
-			
 		}
 		else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
-			std::string temp = value.get().toString().c_str();
+			std::string temp = value.get().toString().c_str(); //sets the value to a string before passing it
 			printEditingValueAndCursor(temp, total_subtracts, charstoleft, col);
 
 			editing_data = temp;
 			size = temp.length();
 		}
-
 	}, field.second);
 
 	attroff(COLOR_PAIR(1));
-	if ((charstoleft - (charstoleft/col)*col) < col){
+	if ((charstoleft - (charstoleft/col)*col) < col){ //if needed print a new line
 		printw("\n");
 	}
 
-	i += charstoleft/col; 
+	i += charstoleft/col; //how many rows has been taken up by the field (in case it goes beyond 1 row)
 }
 
-void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col){
+void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col){ 
 	printw(" ");
 	charstoleft++;								
-	for(int i = 0; i < value.length(); i++){
+
+	for(int i = 0; i < value.length(); i++){ //prints it out character by character to show the cursor
 		char c = value[i];
 		
-		if (i == value.length() - total_subtracts){
+		if (i == value.length() - total_subtracts){ //prints out cursor
 			attroff(COLOR_PAIR(1));
 			attron(COLOR_PAIR(2));
 			printw("%c", c);
-			
 			attroff(COLOR_PAIR(2));
 			attron(COLOR_PAIR(1));
 		}
@@ -549,9 +532,8 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 			printw("%c", c);
 		}
 		charstoleft++;
-		
 	}
-	if (total_subtracts == 0 && (charstoleft - (charstoleft/col)*col) < col){
+	if (total_subtracts == 0 && (charstoleft - (charstoleft/col)*col) < col){ //if you are at end print out cursor at end
 		attroff(COLOR_PAIR(1));
 		attron(COLOR_PAIR(2));
 		printw(" ");
@@ -561,7 +543,7 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 	}
 }
 
-void printFieldName(std::string fieldname, int& charstoleft){
+void printFieldName(std::string fieldname, int& charstoleft){ //prints the name of the field
 	printw("  %s:", fieldname.c_str());
 	charstoleft += 3 + fieldname.length();
 }
