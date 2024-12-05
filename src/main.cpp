@@ -359,13 +359,30 @@ void editFile(const std::filesystem::path& path) {
 			} else if (ch == '~') {
 				break; //exits and saves
 			}
-			else if (ch == char(KEY_BACKSPACE)){
-				std::visit([&](auto&& value) {
-					value.fields.erase(editing_name);
-				}, dict[editing_field].fields[editing_name]);
+			else if(ch == char(KEY_BACKSPACE)){
+				bool die = false;
+				for(int i = 0; i < drop_indices.size(); i++){
+					if(selected_index == drop_indices[i]){
+						die = true;
+						break;
+					}
+
+				}
+				if(editing_field < dict.size() && !die && dict[editing_field].fields.find(editing_name) != dict[editing_field].fields.end()){
+					dict[editing_field].fields.erase(editing_name);
+					metadata.deleteField(dict[editing_field].name, editing_name);
+					num_of_elems--;
+					for(size_t i = 0; i < drop_indices.size(); i++){
+						if(drop_indices[i] > selected_index){
+							drop_indices[i] -= 1;
+						}
+					}
+				}
+			}
+			
 				
 
-			}
+			
 			
 		}
 		else{ //if mode is currently editing

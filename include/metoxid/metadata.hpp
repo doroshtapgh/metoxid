@@ -31,6 +31,7 @@ public:
     }
 
     void Save();
+    void deleteField(const std::string& category, const std::string& field);
 private:
     std::unique_ptr<Exiv2::Image> image_;
     
