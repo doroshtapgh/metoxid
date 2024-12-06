@@ -156,7 +156,7 @@ void editFile(const std::filesystem::path& path) {
 	int category_index = 0; //index of the category the cursor is within
 	std::vector<int> drop_indices; //array that holds the indices of the category dropdown positions
 	
-	for (size_t i = 0; i < num_of_elems; ++i) {
+	for (size_t i = 0; i < num_of_elems + 1; ++i) { //+1 adds a dummy category at the end, used so that the last category can be expanded
 		drop_indices.push_back(i);
 	}
 	
@@ -397,7 +397,7 @@ void editFile(const std::filesystem::path& path) {
 				}
 			}
 			else if (ch == '~') {
-				break; //REMEMBER TO REMOVE THIS LINE
+				break; //exits and saves
 			}
 			else{
 				
@@ -446,25 +446,22 @@ void editFile(const std::filesystem::path& path) {
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
-	
-	if (i < row){ //makes sure there is space
-		attron(COLOR_PAIR(1));
+	attron(COLOR_PAIR(1));
 
-		std::visit([&](auto&& value){ //allows us to access field.second, use "&" to access the address of it and actually change values easilly
-			using T = std::decay_t<decltype(value)>; //gets the datatype of value
-			if constexpr(std::is_same_v<T, std::string>){ //if string
-				printFields(value, charstoleft, row, col);
-			}
-			else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){ //if refrence wrapper
-				printFields(value.get().toString().c_str(), charstoleft, row, col); //sets the value to a string before printing
-			}
-		}, field.second);
-
-		if (charstoleft < col){ //if needed print a new line
-			printw("\n");
+	std::visit([&](auto&& value){ //allows us to access field.second, use "&" to access the address of it and actually change values easilly
+		using T = std::decay_t<decltype(value)>; //gets the datatype of value
+		if constexpr(std::is_same_v<T, std::string>){ //if string
+			printFields(value, charstoleft, row, col);
 		}
-		attroff(COLOR_PAIR(1));
+		else if constexpr(std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){ //if refrence wrapper
+			printFields(value.get().toString().c_str(), charstoleft, row, col); //sets the value to a string before printing
+		}
+	}, field.second);
+
+	if (charstoleft < col){ //if needed print a new line
+		printw("\n");
 	}
+	attroff(COLOR_PAIR(1));
 }
 
 void printFields(std::string value, int& charstoleft, int row, int col){
@@ -525,7 +522,7 @@ void printEditingValueAndCursor(std::string value, int total_subtracts, int& cha
 			attron(COLOR_PAIR(1));
 		}
 		else{
-			printw("%c", c);
+			printw("%c", c); //just the character
 		}
 		charstoleft++;
 	}
