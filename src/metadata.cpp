@@ -81,7 +81,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
 }
 
 void Metadata::Save() {
-    this->image_->setComment(this->comment_);
+    this->image_->setComment(this->comment_); //for some reaosn comment can not sace
     this->image_->setXmpPacket(this->xmp_packet_);
     this->image_->setExifData(this->exif_data_);
     this->image_->setXmpData(this->xmp_data_);
