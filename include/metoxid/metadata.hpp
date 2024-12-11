@@ -31,7 +31,7 @@ public:
     }
 
     void SetComment(const std::string& comment);
-    void SetXmpPacket(const std::string& xmp_packet);
+    void SetPacket(const std::string& xmp_packet);
     void Save();
 
 private:

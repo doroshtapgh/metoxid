@@ -85,23 +85,23 @@ void Metadata::SetComment(const std::string& comment) {
     this->comment_ = comment;
 }
 
-void Metadata::SetXmpPacket(const std::string& xmp_packet) {
+void Metadata::SetPacket(const std::string& xmp_packet) {
     this->xmp_packet_ = xmp_packet;
 }
 
 void Metadata::Save() {
     try{
-        this->image_->setComment(this->comment_); //For some reason comment can not save FOR REAL
+        this->image_->setComment(this->comment_); //For some reason comment can not save
     }
     catch (const std::exception& e) {
-        std::cout << "Failed to save comment: " << e.what() << std::endl;
+        std::cout << "HI" << std::endl;
     } 
 
     try{
         this->image_->setXmpPacket(this->xmp_packet_); //For some reason XMP can not save FOR REAL
     }
     catch (const std::exception& e) {
-        std::cout << "Failed to save XMP packet: " << e.what() << std::endl;
+        std::cout << "HI" << std::endl;
     } 
     
     try{

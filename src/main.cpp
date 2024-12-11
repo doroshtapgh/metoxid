@@ -437,7 +437,7 @@ void editFile(const std::filesystem::path& path) {
 						if (editing_name == "Comment") { //if the field is comment, set the comment (required because comment is a string not an exiv2 val so is more finicky)
 							metadata.SetComment(editing_data);
 						} else if (editing_name == "XMP Packet") { //if the field is XMP Packet, set the comment (required because comment is a string not an exiv2 val so is more finicky)
-							metadata.SetXmpPacket(editing_data);
+							metadata.SetPacket(editing_data);
 						}
 					} else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>) {
 						const_cast<Exiv2::Value&>(value.get()).read(editing_data);
