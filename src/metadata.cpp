@@ -80,11 +80,40 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 }
 
-void Metadata::Save() {
-    this->image_->setComment(this->comment_); //for some reaosn comment can not sace
-    this->image_->setXmpPacket(this->xmp_packet_);
-    this->image_->setExifData(this->exif_data_);
-    this->image_->setXmpData(this->xmp_data_);
-    this->image_->setIptcData(this->iptc_data_);
-    this->image_->writeMetadata();
+void Metadata::Save() {try{
+    this->image_->setComment(this->comment_); //For some reason comment can not save
+    }
+    catch (const std::exception& e) {
+        std::cout << "hi" << std::endl;
+    } 
+
+    try{
+    this->image_->setXmpPacket(this->xmp_packet_); //For some reason XMP can not save
+    }
+    catch (const std::exception& e) {
+        std::cout << "hi" << std::endl;
+    } 
+    
+    try{
+        this->image_->setExifData(this->exif_data_); //For some reason EXIF can not save
+    }
+    catch (const std::exception& e){
+        std::cout << "HI" << std::endl;
+    }
+
+    try{
+    this->image_->setXmpData(this->xmp_data_); //For some reason XMP_Data can not save
+    }
+    catch (const std::exception& e) {
+        std::cout << "hi" << std::endl;
+    } 
+
+    try{
+    this->image_->setIptcData(this->iptc_data_); //For some reason IPTC can not save
+    }
+    catch (const std::exception& e) {
+        std::cout << "hi" << std::endl;
+    } 
+    
+    this->image_->writeMetadata(); //Finally writes metadata to the file
 }

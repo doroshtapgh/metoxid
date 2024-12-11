@@ -20,6 +20,11 @@
 #include <vector>
 #include <iostream>
 #include <optional>
+#include <variant>
+#include <functional>
+#include <fstream>
+#include <iomanip>
+//REMNEEDED BCAUSE OF THE THING NEEED TO FIND THE HEADER.............. IN THE OLD CODE
 
 void browseDirectory(const std::filesystem::path& dir);
 void editFile(const std::filesystem::path& path);
@@ -28,6 +33,7 @@ void printFieldName(std::string fieldname, int& charstoleft);
 void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col);
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft);
 void printFields(std::string value, int& charstoleft, int row, int col);
+bool check_header(const std::filesystem::path& path);
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler); // Register the signal handler
@@ -159,6 +165,8 @@ void editFile(const std::filesystem::path& path) {
 	for (size_t i = 0; i < num_of_elems + 1; ++i) { //+1 adds a dummy category at the end, used so that the last category can be expanded
 		drop_indices.push_back(i);
 	}
+
+	bool should_edit = check_header(path); //checks if the file can be edited
 	
 	while (true) {
 		size_t printed_categories = 0; //counter of categories that have been printed
@@ -179,7 +187,7 @@ void editFile(const std::filesystem::path& path) {
 								if (top_down_increament == offset){
 									i += 1;
 									charstoleft = 0;
-									if (i > row){
+									if (i > row){ //if the would be off screen, break
 										break;
 									}					
 									if (i + offset == selected_index+1) { 
@@ -325,7 +333,7 @@ void editFile(const std::filesystem::path& path) {
 			} else if (ch == 10) {
 				//if the key pressed was enter
 				total_subtracts = 0;
-				editing = true;
+				if(should_edit){editing = true;}
 			
 				for (int i = 0; i < drop_indices.size(); ++i) {
 					if (drop_indices[i] == selected_index) {
@@ -434,15 +442,48 @@ void editFile(const std::filesystem::path& path) {
 				}, dict[editing_field].fields[editing_name]);
 			}
 			
-
 		}
 
 		clear();
 	}
 
 	clear();
-	metadata.Save(); // Save the edited metadata
+	if (should_edit){
+		metadata.Save(); // Save the edited metadata
+	}
 	browseDirectory(path.parent_path()); //goes back to image select
+}
+
+bool check_header(const std::filesystem::path& path){
+	
+	std::vector<std::vector<char>> headers = {
+		{0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20}, //JXL
+		{0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63}, //HEIC
+		{0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70}, //HIEF
+		{0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70} //Diferent HIEF file format
+	};
+
+	std::fstream s(path, std::ios::binary | std::ios::in | std::ios::out);
+	
+	if (!s.is_open()){
+		fatalError("Failed to open file");
+	}
+
+	char file_header[8] = {0};
+	s.read(file_header, 8);
+ 
+	for (int i = 0; i < headers.size(); i++){
+		for (int j = 0; headers[i].size(); j++){
+			if (file_header[j] != headers[i][j]){
+				break;
+			}
+			if (j == headers[i].size() - 1){
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
