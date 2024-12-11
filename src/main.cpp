@@ -434,7 +434,7 @@ void editFile(const std::filesystem::path& path) {
 				std::visit([&](auto&& value) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
-						value = editing_data;
+						const_cast<std::string&>(value) = editing_data;
 					}
 					else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
 						const_cast<Exiv2::Value&>(value.get()).read(editing_data);

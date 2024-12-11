@@ -25,6 +25,7 @@ Metadata::Metadata(const std::filesystem::path& file) {
     this->xmp_data_ = image_->xmpData();
 
     if (!this->comment_.empty()) {
+        
         Category category("Comment", {
             { "Comment", this->comment_ }
         });
@@ -80,15 +81,16 @@ Metadata::Metadata(const std::filesystem::path& file) {
     }
 }
 
-void Metadata::Save() {try{
-    this->image_->setComment(this->comment_); //For some reason comment can not save
+void Metadata::Save() {
+    try{
+        this->image_->setComment(this->comment_); //For some reason comment can not save FOR REAL
     }
     catch (const std::exception& e) {
         std::cout << "hi" << std::endl;
     } 
 
     try{
-    this->image_->setXmpPacket(this->xmp_packet_); //For some reason XMP can not save
+        this->image_->setXmpPacket(this->xmp_packet_); //For some reason XMP can not save FOR REAL
     }
     catch (const std::exception& e) {
         std::cout << "hi" << std::endl;
