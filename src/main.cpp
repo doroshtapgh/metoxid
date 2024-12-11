@@ -151,7 +151,7 @@ void editFile(const std::filesystem::path& path) {
 	int row, col; //row = number of characters that fit in a vertical line on the curent screen size | col = number of characters that fit horizontally
 	bool editing = false; // false if no field is being edited, allows cursor to move up and down, true if a field is being edited, only allows left and right cursor movement
 	std::string editing_name = ""; //name of the field that is being edited
-	std::string temp = ""; 
+	std::string temp = ""; //temporary string that holds the value of the field that is being edited
 	int editing_field = 0; //index of the field that is being edited
 	int charstoleft = 0; //like offset, but horizontally
 	int total_subtracts = 0; //how many characters from the end the cursor is at when editing a field
@@ -434,9 +434,9 @@ void editFile(const std::filesystem::path& path) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
 						value = editing_data;
-						if (editing_name == "Comment") {
+						if (editing_name == "Comment") { //if the field is comment, set the comment (required because comment is a string not an exiv2 val so is more finicky)
 							metadata.SetComment(editing_data);
-						} else if (editing_name == "XMP Packet") {
+						} else if (editing_name == "XMP Packet") { //if the field is XMP Packet, set the comment (required because comment is a string not an exiv2 val so is more finicky)
 							metadata.SetXmpPacket(editing_data);
 						}
 					} else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>) {

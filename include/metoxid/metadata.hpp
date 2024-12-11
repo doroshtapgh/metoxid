@@ -30,7 +30,10 @@ public:
         this->metadata_ = dict;
     }
 
+    void SetComment(const std::string& comment);
+    void SetXmpPacket(const std::string& xmp_packet);
     void Save();
+
 private:
     std::unique_ptr<Exiv2::Image> image_;
     
