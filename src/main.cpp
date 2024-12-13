@@ -24,16 +24,15 @@
 #include <functional>
 #include <fstream>
 #include <iomanip>
-//REMNEEDED BCAUSE OF THE THING NEEED TO FIND THE HEADER.............. IN THE OLD CODE
 
-void browseDirectory(const std::filesystem::path& dir);
-void editFile(const std::filesystem::path& path);
-void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col);
-void printFieldName(std::string fieldname, int& charstoleft);
-void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col);
-void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft);
-void printFields(std::string value, int& charstoleft, int row, int col);
-bool check_header(const std::filesystem::path& path);
+void browseDirectory(const std::filesystem::path& dir); //Function to browse the director that the User is in
+void editFile(const std::filesystem::path& path); //Function to start editing the file's meta data
+void printEditingValueAndCursor(std::string value, int total_subtracts, int& charstoleft, int col); //Function to print the value (metadata) of the field that is being edited
+void printFieldName(std::string fieldname, int& charstoleft); //Function to print the name of the field
+void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col); //Function to print the fields that are being edited
+void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft); //Function to print the fields that are not being edited
+void printFields(std::string value, int& charstoleft, int row, int col); //Function to print the fields that are not being edited
+bool check_header(const std::filesystem::path& path); //Function to check if the file can be edited by Exiv2
 
 int main(int argc, char* argv[]) {
 	signal(SIGINT, sigintHandler); // Register the signal handler
@@ -434,7 +433,7 @@ void editFile(const std::filesystem::path& path) {
 				std::visit([&](auto&& value) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
-						const_cast<std::string&>(value) = editing_data;
+						value = editing_data;
 					}
 					else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
 						const_cast<Exiv2::Value&>(value.get()).read(editing_data);
