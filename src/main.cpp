@@ -434,8 +434,12 @@ void editFile(const std::filesystem::path& path) {
 					using T = std::decay_t<decltype(value)>;
 					if constexpr (std::is_same_v<T, std::string>) {
 						value = editing_data;
-					}
-					else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>){
+						if (editing_name == "Comment") {
+							metadata.SetComment(editing_data);
+						} else if (editing_name == "XMP Packet") {
+							metadata.SetXmpPacket(editing_data);
+						}
+					} else if constexpr (std::is_same_v<T, std::reference_wrapper<const Exiv2::Value>>) {
 						const_cast<Exiv2::Value&>(value.get()).read(editing_data);
 					}
 				}, dict[editing_field].fields[editing_name]);
