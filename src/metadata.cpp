@@ -94,23 +94,5 @@ void Metadata::deleteField(const std::string& category, const std::string& field
     if(category == "Exif"){
         auto value = exif_data_.findKey(Exiv2::ExifKey(field));
         exif_data_.erase(value);
-        for(auto& category : metadata_){
-            if(category.name == "Exif"){
-                category.fields.erase(field);
-                break;
-            }
-        }
-    }
-    if(category == "XMP Data"){
-        Exiv2::XmpData::iterator value = xmp_data_.findKey(Exiv2::XmpKey(field));
-        if (value != xmp_data_.end()){
-            xmp_data_.erase(value);
-            for(auto& category : metadata_){
-                if(category.name == "XMP Data"){
-                    category.fields.erase(field);
-                    break;
-                }
-            }
-        }
     }
 }

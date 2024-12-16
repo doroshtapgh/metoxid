@@ -29,7 +29,7 @@ public:
     void SetDict(const std::vector<Category>& dict) {
         this->metadata_ = dict;
     }
-
+    
     void Save();
     void deleteField(const std::string& category, const std::string& field);
 private:

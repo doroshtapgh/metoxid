@@ -157,7 +157,7 @@ void editFile(const std::filesystem::path& path) {
 	int category_index = 0; //index of the category the cursor is within
 	std::vector<int> drop_indices; //array that holds the indices of the category dropdown positions
 	
-	for (size_t i = 0; i < num_of_elems; ++i) {
+	for (size_t i = 0; i < num_of_elems + 1; ++i) {
 		drop_indices.push_back(i);
 	}
 	
@@ -467,11 +467,10 @@ void editFile(const std::filesystem::path& path) {
 
 		clear();
 	}
-
+	
 	clear();
 	metadata.Save(); // Save the edited metadata
 	browseDirectory(path.parent_path()); //goes back to image select
-
 }
 
 void printRegularly(size_t i, int row, int col, const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& charstoleft){
@@ -522,7 +521,6 @@ void printRegularly(size_t i, int row, int col, const std::pair<const std::strin
 
 void printEditingFields(const std::pair<const std::string, std::variant<std::string, std::reference_wrapper<const Exiv2::Value>>>& field, int& total_subtracts, int& size, std::string& editing_data, std::string& temp, int& charstoleft, size_t& i, int row, int col){
 	attron(COLOR_PAIR(1));
-	
 	std::visit([&](auto&& value) {
 		using T = std::decay_t<decltype(value)>;
 		if constexpr (std::is_same_v<T, std::string>) {
