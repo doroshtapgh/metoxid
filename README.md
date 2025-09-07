@@ -19,3 +19,7 @@ You have to update `PATH` variable to make CMake able to locate MinGW compiler
 ```bash
 export PATH="/mingw64/bin:$PATH"
 ```
+
+# Demo
+
+[Watch the demo video on YouTube](https://www.youtube.com/watch?v=m9DBi6Rof1E)
